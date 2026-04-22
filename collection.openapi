@@ -1,0 +1,987 @@
+openapi: 3.0.0
+info:
+  title: Football League Social API
+  description: >-
+    Comprehensive API collection for the Football League Social Platform. This
+    collection includes automatic token management - tokens are stored in an
+    environment variable after login and automatically used in all authenticated
+    requests.
+  version: 1.0.0
+servers:
+  - url: http://{{baseurl}}
+tags:
+  - name: Authentication
+    description: Authentication endpoints for login, signup, and logout
+  - name: Users
+    description: User profile and activity endpoints
+  - name: Social Features
+    description: Follow, followers, and following endpoints
+  - name: Feed
+    description: Personalized feed endpoint
+  - name: Moderation
+    description: Content moderation and reporting endpoints
+  - name: Threads
+    description: Thread management endpoints
+  - name: Posts
+    description: Post management endpoints
+  - name: Polls
+    description: Poll management endpoints
+  - name: Forums
+    description: Forum endpoints
+  - name: Matches
+    description: Match and league data endpoints
+  - name: AI Features
+    description: AI-powered AI digest, sentiment analysis, and translation endpoints
+paths:
+  /api/auth/signup:
+    post:
+      tags:
+        - Authentication
+      summary: Sign Up
+      description: >-
+        Create a new user account with email, username, and password. The token
+        will be automatically stored in the authToken variable after successful
+        login.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                email: testuser@example.com
+                username: testuser123
+                password: securePassword123
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login
+      description: >-
+        Authenticate user with email and password. Returns a JWT token as an
+        HTTP-only cookie and automatically stores it for use in subsequent
+        requests.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                email: testuser@example.com
+                password: securePassword123
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout
+      description: Log out the current user and invalidate the authentication token.
+      requestBody:
+        content: {}
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+          example: authToken={{authToken}}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/users/profile:
+    get:
+      tags:
+        - Users
+      summary: Get Current User Profile
+      description: >-
+        Retrieve the authenticated user's own profile information including
+        followers, following, threads, and posts.
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+          example: authToken={{authToken}}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/users/johndoe/profile:
+    get:
+      tags:
+        - Users
+      summary: Get User Profile by Username
+      description: >-
+        Retrieve a specific user's public profile information including follower
+        counts, threads, and posts. Replace 'johndoe' with the actual username.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/users/johndoe/activity:
+    get:
+      tags:
+        - Users
+      summary: Get User Activity
+      description: >-
+        Retrieve activity history for a specific user, showing recent posts,
+        threads, and interactions. Replace 'johndoe' with the target username.
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+          example: authToken={{authToken}}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/social/follow/2:
+    post:
+      tags:
+        - Social Features
+      summary: Follow User
+      description: >-
+        Follow another user by their user ID. Replace '2' with the target user's
+        ID. Requires authentication.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example: {}
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+          example: authToken={{authToken}}
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - Social Features
+      summary: Unfollow User
+      description: >-
+        Unfollow a user by their user ID. Replace '2' with the target user's ID.
+        Requires authentication.
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+          example: authToken={{authToken}}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/social/followers:
+    get:
+      tags:
+        - Social Features
+      summary: Get Followers
+      description: Retrieve the list of followers for the authenticated user.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/social/followers/2:
+    get:
+      tags:
+        - Social Features
+      summary: Get Followers for Specific User
+      description: >-
+        Retrieve the list of followers for a specific user by their ID. Replace
+        '2' with the target user's ID.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/social/following:
+    get:
+      tags:
+        - Social Features
+      summary: Get Following
+      description: >-
+        Retrieve the list of users that the authenticated user is following.
+        Requires authentication.
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+          example: authToken={{authToken}}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/feed:
+    get:
+      tags:
+        - Feed
+      summary: Get Personalized Feed
+      description: >-
+        Retrieve a personalized dashboard feed for the authenticated user,
+        including activity on their posts, posts from users they follow, and
+        updates about their favorite team. Requires authentication.
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+          example: authToken={{authToken}}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/moderation/report:
+    post:
+      tags:
+        - Moderation
+      summary: Report Post or Thread
+      description: >-
+        Submit a report for a post or thread. The content will be analyzed by AI
+        for toxicity. Include targetId (the post or thread ID), targetType (POST
+        or THREAD), reason (user's reason for reporting), content (the text
+        being reported), and reporterId (ID of the user reporting). Returns 201
+        with reportId on success, 400 for invalid input, 500 for server errors.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                targetId: 5
+                targetType: POST
+                reason: Offensive language and harassment
+                content: The actual text content of the post being reported
+                reporterId: 1
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/moderation/queue:
+    get:
+      tags:
+        - Moderation
+      summary: Get Moderation Queue
+      description: >-
+        Retrieve the list of pending reports in the moderation queue, sorted by
+        toxicity score (highest first) and creation date. Admin-only endpoint.
+        Returns 200 with array of reports containing toxicity scores and AI
+        verdicts.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/moderation/ban:
+    post:
+      tags:
+        - Moderation
+      summary: Approve or Dismiss Report
+      description: >-
+        Admin endpoint to handle report decisions. Set conclusion to 'APPROVED'
+        to ban the user and hide their content, or 'DISMISSED' to reject the
+        report. When approved, hides the reported post/thread and bans the
+        author. Returns 200 on success, 400 for invalid input, 500 for errors.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                reportId: 1
+                conclusion: APPROVED
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/moderation/appeal:
+    post:
+      tags:
+        - Moderation
+      summary: Appeal Ban
+      description: >-
+        Allow a banned user to submit an appeal request. Only banned users can
+        submit appeals. Include userId (the banned user ID) and message
+        (explanation of why the ban should be lifted). Returns 201 with appeal
+        object on success, 400 if user is not banned or already has a pending
+        appeal, 409 if appeal already pending, 500 for errors.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                userId: 3
+                message: >-
+                  I believe my ban was unfair because I was discussing team
+                  strategy, not being abusive.
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/threads:
+    get:
+      tags:
+        - Threads
+      summary: Get All Threads
+      description: >-
+        Retrieve all threads with optional filtering by search term, team,
+        author, limit, and offset for pagination.
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          example: champions
+        - name: team
+          in: query
+          schema:
+            type: integer
+          example: '1'
+        - name: author
+          in: query
+          schema:
+            type: string
+          example: johndoe
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: '20'
+        - name: offset
+          in: query
+          schema:
+            type: integer
+          example: '0'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    post:
+      tags:
+        - Threads
+      summary: Create Thread
+      description: >-
+        Create a new discussion thread with a title, forum, optional match
+        association, tags, and initial content. Requires authentication.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                title: Manchester United Season Review
+                forumId: 1
+                matchId: null
+                tags:
+                  - soccer
+                  - review
+                  - manchester-united
+                content: Let's discuss the team's performance this season...
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+          example: authToken={{authToken}}
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/threads/1:
+    get:
+      tags:
+        - Threads
+      summary: Get Thread by ID
+      description: >-
+        Retrieve a specific thread by its ID. Replace '1' with the actual thread
+        ID.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/threads/1/polls:
+    get:
+      tags:
+        - Threads
+      summary: Get Thread Polls
+      description: >-
+        Retrieve all polls associated with a specific thread. Replace '1' with
+        the actual thread ID.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/threads/1/replies:
+    get:
+      tags:
+        - Threads
+      summary: Get Thread Replies
+      description: >-
+        Retrieve all replies/posts in a specific thread with pagination support.
+        Replace '1' with the actual thread ID.
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: '20'
+        - name: offset
+          in: query
+          schema:
+            type: integer
+          example: '0'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/posts/johndoe:
+    get:
+      tags:
+        - Posts
+      summary: Get User Posts
+      description: >-
+        Retrieve all posts created by a specific user. Replace 'johndoe' with
+        the target username.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/posts/johndoe/5:
+    get:
+      tags:
+        - Posts
+      summary: Get Specific Post
+      description: >-
+        Retrieve a specific post by username and post ID. Replace 'johndoe' with
+        username and '5' with the post ID.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    put:
+      tags:
+        - Posts
+      summary: Update Post
+      description: >-
+        Update the content of an existing post. Only the post author can update
+        their own posts. Replace 'johndoe' with username and '5' with post ID.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                text: Updated post content with new information
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: Bearer {{authToken}}
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - Posts
+      summary: Delete Post
+      description: >-
+        Delete a post by its ID. Only the post author can delete their own
+        posts. Replace 'johndoe' with username and '5' with post ID.
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+          example: Bearer {{authToken}}
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/posts/johndoe/create:
+    post:
+      tags:
+        - Posts
+      summary: Create Post (Reply to Thread)
+      description: >-
+        Create a new post (reply) within a thread. Include threadId for the
+        thread and optionally parentPostId if replying to another post. Requires
+        authentication. Replace 'johndoe' with your username.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                text: >-
+                  Great analysis! I completely agree with your points about the
+                  defense.
+                threadId: 1
+                parentPostId: null
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+          example: authToken={{authToken}}
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/polls/johndoe:
+    get:
+      tags:
+        - Polls
+      summary: Get User Polls
+      description: >-
+        Retrieve all polls created by a specific user. Replace 'johndoe' with
+        the target username.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/polls/johndoe/3:
+    get:
+      tags:
+        - Polls
+      summary: Get Specific Poll
+      description: >-
+        Retrieve a specific poll by username and poll ID. Replace 'johndoe' with
+        username and '3' with the poll ID.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/polls:
+    post:
+      tags:
+        - Polls
+      summary: Create Poll
+      description: >-
+        Create a new poll within a thread with a question, options, and optional
+        expiration date. Requires authentication.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                question: Who will win the championship?
+                options:
+                  - Manchester United
+                  - Liverpool
+                  - Chelsea
+                threadId: 1
+                expiresAt: '2025-12-31T23:59:59Z'
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+          example: authToken={{authToken}}
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/polls/johndoe/3/vote:
+    post:
+      tags:
+        - Polls
+      summary: Vote on Poll
+      description: >-
+        Vote on a poll option. Replace 'johndoe' with username and '3' with poll
+        ID. Include the optionId in the request body. Requires authentication.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                optionId: 1
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+          example: authToken={{authToken}}
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/forums:
+    get:
+      tags:
+        - Forums
+      summary: Get All Forums
+      description: Retrieve all forums including general forum and team-specific forums.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/forums/teams:
+    get:
+      tags:
+        - Forums
+      summary: Get Team Forums
+      description: Retrieve all team-specific forums.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/forums/teams/threads:
+    get:
+      tags:
+        - Forums
+      summary: Get Team Forum Threads
+      description: Retrieve threads from a specific team's forum with optional pagination.
+      parameters:
+        - name: teamId
+          in: query
+          schema:
+            type: integer
+          example: '1'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: '20'
+        - name: offset
+          in: query
+          schema:
+            type: integer
+          example: '0'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/forums/teams/threads/1/polls:
+    get:
+      tags:
+        - Forums
+      summary: Get Team Forum Thread Polls
+      description: >-
+        Retrieve all polls in a specific team forum thread. Replace '1' with the
+        thread ID.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/forums/teams/threads/1/posts:
+    get:
+      tags:
+        - Forums
+      summary: Get Team Forum Thread Posts
+      description: >-
+        Retrieve all posts in a specific team forum thread. Replace '1' with the
+        thread ID.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/forums/threads:
+    get:
+      tags:
+        - Forums
+      summary: Get General Forum Threads
+      description: Retrieve threads from the general forum with optional pagination.
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: '20'
+        - name: offset
+          in: query
+          schema:
+            type: integer
+          example: '0'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/forums/threads/1/polls:
+    get:
+      tags:
+        - Forums
+      summary: Get General Forum Thread Polls
+      description: >-
+        Retrieve all polls in a specific general forum thread. Replace '1' with
+        the thread ID.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/forums/threads/matches:
+    get:
+      tags:
+        - Forums
+      summary: Get General Forum Thread Matches
+      description: Retrieve match-specific discussion threads from the general forum.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/matches:
+    get:
+      tags:
+        - Matches
+      summary: Get All Matches
+      description: >-
+        Retrieve all matches with optional filtering by status (scheduled, live,
+        completed) and pagination.
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+          example: scheduled
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: '20'
+        - name: offset
+          in: query
+          schema:
+            type: integer
+          example: '0'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/matches/matchday/5:
+    get:
+      tags:
+        - Matches
+      summary: Get Match by Matchday
+      description: >-
+        Retrieve all matches for a specific matchday. Replace '5' with the
+        matchday number.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/league/matchdays:
+    get:
+      tags:
+        - Matches
+      summary: Get League Matchdays
+      description: Retrieve all league matchdays with their details.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/league/standings:
+    get:
+      tags:
+        - Matches
+      summary: Get League Standings
+      description: >-
+        Retrieve the current league standings with team positions, points, wins,
+        losses, and goal differences.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/ai/digest:
+    get:
+      tags:
+        - AI Features
+      summary: Get AI Digest
+      description: >-
+        Generate an AI-powered digest of recent discussions and match updates.
+        Optionally filter by teamId. Requires authentication.
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+          example: authToken={{authToken}}
+        - name: teamId
+          in: query
+          schema:
+            type: integer
+          example: '1'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/ai/sentiment/1:
+    post:
+      tags:
+        - AI Features
+      summary: Analyze Thread Sentiment
+      description: >-
+        Analyze the sentiment of discussions in a specific thread (positive,
+        negative, mixed). Replace '1' with the thread ID. Requires
+        authentication.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example: {}
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+          example: authToken={{authToken}}
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /api/ai/translate:
+    post:
+      tags:
+        - AI Features
+      summary: Translate Content
+      description: >-
+        Translate text content to a specified target language. Include text and
+        targetLanguage (e.g., 'es' for Spanish, 'fr' for French). Requires
+        authentication.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                text: This is an amazing performance!
+                targetLanguage: es
+      parameters:
+        - name: Cookie
+          in: header
+          schema:
+            type: string
+          example: authToken={{authToken}}
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+          example: application/json
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}

@@ -1,0 +1,227 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum Status {
+  scheduled
+  live
+  completed
+}
+
+model User {
+  id            Int     @id @default(autoincrement())
+  email         String     @unique
+  username      String    @unique
+  passwordHash  String
+  avatar        String?
+  favoriteTeamId String?
+  role          UserRole   @default(USER)
+
+  // For moderation
+  isBanned Boolean @default(false)
+
+  followers     User[] @relation("UserFollows")
+  following     User[] @relation("UserFollows")
+
+  appeals   Appeal[]
+  reports Report[] @relation("Reporter")
+  threads       Thread[]
+  posts         Post[]
+  polls         Poll[]
+  @@unique([id, username])
+}
+
+model Report {
+  id              Int      @id @default(autoincrement())
+  reason          String   // User-provided reason
+  aiVerdict       String?  // "INAPPROPRIATE" | "SAFE"
+  aiExplanation   String?
+  toxicityScore   Float?   // 0.0 to 1.0
+  status          String   @default("PENDING") // "PENDING" | "DISMISSED" | "APPROVED"
+  
+  threadId        Int?
+  postId          Int?
+  pollId          Int?
+  
+  reporterId      Int
+  reporter        User     @relation("Reporter", fields: [reporterId], references: [id])
+
+  createdAt       DateTime @default(now())
+}
+
+model Appeal {
+  id        Int      @id @default(autoincrement())
+  message   String
+  status    String   @default("PENDING") // "PENDING" | "APPROVED" | "REJECTED"
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Forum {
+  id        Int   @id @default(autoincrement())
+  name      String
+  teamId    Int? @unique // null means general forum, not team specific
+  createdAt DateTime @default(now())
+  team      Team? @relation(fields: [teamId], references: [id])
+
+  threads   Thread[]
+}
+
+model Team {
+  id Int @id @default(autoincrement())
+  externalId Int @unique
+  name String
+  shortName String?
+  tla String? // Three-letter abbreviation, ex. "TOR" for Toronto
+  crest String? // URL to team logo
+
+  // Relations
+  homeMatches Match[] @relation("homeMatches")
+  awayMatches Match[] @relation("awayMatches")
+
+  standings Standing[]
+
+  forum Forum?
+} 
+
+model Standing {
+  id Int @id @default(autoincrement())
+  type String
+  position Int
+  points Int
+  playedGames Int
+  won Int
+  draw Int
+  lost Int
+  goalsFor Int
+  goalsAgainst Int
+  goalDifference Int
+
+  // Relations
+  team Team @relation(fields: [teamId], references: [id])
+  teamId Int
+
+  @@unique([teamId, type]) // Ensuring one team can't have two "TOTAL" rows
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Match {
+  id Int @id @default(autoincrement())
+  externalId Int @unique
+  status String // can be changed to ENUM with "SCHEDULED", "FINISHED", "TIMED"
+  utcDate DateTime // time + date of game
+  matchDay Int 
+  stage String? // "REGULAR_SEASON", "GROUP_STAGE", ...
+  venue String?
+
+  // Scores
+  homeScore Int? 
+  awayScore Int?
+
+  // Teams
+  homeTeam Team @relation("homeMatches", fields: [homeTeamId], references: [id])
+  homeTeamId Int
+  awayTeam Team @relation("awayMatches", fields: [awayTeamId], references: [id])
+  awayTeamId Int
+
+  // AI & Social
+  sentiment String? // "Positive", "Negative", "Mixed" (AI-generated)
+  homeSentiment Float? // Numeric score for team-specific mood
+  awaySentiment Float?
+
+  // Discussion Thread (One match has one dedicated thread)
+  thread Thread?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Thread {
+  id               Int   @id @default(autoincrement())
+  title            String
+  tags             Json?
+  author           User?     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId         Int?
+  forum            Forum    @relation(fields: [forumId], references: [id], onDelete: Cascade)
+  forumId          Int
+  externalMatchId  Int?     @unique
+  match            Match?   @relation(fields: [externalMatchId], references: [externalId])
+  // matchId removed, now using externalMatchId for relation
+  hidden           Boolean @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  posts            Post[]
+  polls            Poll[]
+}
+
+model Post {
+  id          Int   @id @default(autoincrement())
+  textContent String
+  author           User?     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId         Int?
+  thread      Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  threadId    Int
+  parentPost  Post?    @relation("PostReplies", fields: [parentPostId], references: [id], onDelete: Cascade)
+  parentPostId Int?
+  hidden      Boolean @default(false)
+  replies     Post[]   @relation("PostReplies")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  versions    PostVersion[]
+}
+
+model PostVersion {
+  id        Int   @id @default(autoincrement())
+  post      Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    Int
+  content   String
+  editedAt  DateTime @default(now())
+}
+
+model Poll {
+  id        Int   @id @default(autoincrement())
+  question  String
+  options   Json
+  votes     Json
+  hidden    Boolean @default(false)
+  thread    Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  threadId  Int
+  author           User?     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId         Int?
+  username         String?
+  deadline  DateTime
+  createdAt DateTime @default(now())
+  
+  versions  PollVersion[]
+}
+
+model PollVersion {
+  id        Int   @id @default(autoincrement())
+  poll      Poll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  pollId    Int
+  question  String
+  options   Json
+  editedAt  DateTime @default(now())
+}
+
