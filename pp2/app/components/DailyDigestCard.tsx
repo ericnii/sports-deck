@@ -1,6 +1,95 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, ReactNode } from "react";
+
+function renderInlineText(text: string): ReactNode[] {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+
+  return parts.map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={index} className="font-bold text-zinc-950 dark:text-white">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+
+    return <React.Fragment key={index}>{part}</React.Fragment>;
+  });
+}
+
+function DigestContent({ digest }: { digest: string }) {
+  const lines = digest
+    .replace(/\\n/g, "\n")
+    .replace(/\r/g, "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line, index, allLines) => line.length > 0 || allLines[index - 1]?.length > 0);
+
+  const rendered: ReactNode[] = [];
+  let bulletItems: string[] = [];
+
+  const flushBullets = () => {
+    if (bulletItems.length === 0) return;
+
+    rendered.push(
+      <ul key={`bullets-${rendered.length}`} className="my-4 space-y-3">
+        {bulletItems.map((item, index) => (
+          <li key={index} className="flex gap-3 leading-relaxed">
+            <span className="mt-[0.65em] h-1.5 w-1.5 flex-none rounded-full bg-indigo-500 dark:bg-indigo-400" />
+            <span>{renderInlineText(item)}</span>
+          </li>
+        ))}
+      </ul>
+    );
+    bulletItems = [];
+  };
+
+  lines.forEach((line, index) => {
+    const bulletMatch = line.match(/^(?:[*-]\s+)(.+)$/);
+    if (bulletMatch) {
+      bulletItems.push(bulletMatch[1]);
+      return;
+    }
+
+    flushBullets();
+
+    if (!line) return;
+
+    const headingText = line
+      .replace(/^#{1,6}\s*/, "")
+      .replace(/^\*\*/, "")
+      .replace(/\*\*$/, "")
+      .replace(/:$/, "")
+      .trim();
+
+    const isMarkdownHeading = /^#{1,6}\s/.test(line);
+    const isBoldHeading = /^\*\*[^*]+\*\*$/.test(line);
+    const isLookingAhead = /^\*{0,2}Looking Ahead:/i.test(line);
+
+    if (isMarkdownHeading || isBoldHeading || isLookingAhead) {
+      rendered.push(
+        <h3
+          key={`heading-${index}`}
+          className="mt-6 mb-3 text-xl font-extrabold tracking-tight text-zinc-950 dark:text-white"
+        >
+          {renderInlineText(headingText)}
+        </h3>
+      );
+      return;
+    }
+
+    rendered.push(
+      <p key={`paragraph-${index}`} className="mb-4 leading-7 text-zinc-700 dark:text-zinc-300">
+        {renderInlineText(line)}
+      </p>
+    );
+  });
+
+  flushBullets();
+
+  return <div className="max-w-none">{rendered}</div>;
+}
 
 export default function DailyDigestCard() {
   const [digest, setDigest] = useState<string | null>(null);
@@ -97,14 +186,6 @@ export default function DailyDigestCard() {
         {/* Error State */}
         {!isLoading && error && (
           <div className="py-6 flex flex-col items-center justify-center text-center bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-100 dark:border-red-900/30">
-            <svg
-              className="w-10 h-10 text-red-500 mb-3 opacity-80"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
             <p className="text-red-700 dark:text-red-400 font-medium mb-4 max-w-sm">
               {error}
             </p>
@@ -122,8 +203,8 @@ export default function DailyDigestCard() {
 
         {/* Success State */}
         {!isLoading && !error && digest && (
-          <div className="prose prose-zinc dark:prose-invert max-w-none text-slate-800 dark:text-slate-300 text-lg leading-relaxed whitespace-pre-wrap">
-            {digest}
+          <div className="rounded-2xl border border-zinc-200/80 bg-zinc-50/70 px-5 py-5 dark:border-zinc-700/70 dark:bg-zinc-950/30 md:px-7 md:py-6">
+            <DigestContent digest={digest} />
           </div>
         )}
       </div>
