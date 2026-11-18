@@ -72,12 +72,20 @@ export async function PUT(req, { params }) {
             return NextResponse.json({ error: "Invalid poll option index" }, { status: 400 });
         }
 
+        if (!Number.isInteger(optionIndex)) {
+            return NextResponse.json({ error: "Invalid poll option index" }, { status: 400 });
+        }
+
         const poll = await prisma.poll.findUnique({
             where: { id: pollId }
         });
 
         if (!poll || poll.threadId !== threadId) {
             return NextResponse.json({ error: "Poll not found for this thread" }, { status: 404 });
+        }
+
+        if (optionIndex < 0 || optionIndex >= poll.options.length) {
+            return NextResponse.json({ error: "Invalid poll option index" }, { status: 400 });
         }
 
         const thread = await prisma.thread.findUnique({ where: { id: threadId }, select: { hidden: true } });
@@ -91,14 +99,22 @@ export async function PUT(req, { params }) {
         }
 
         // Check if user already voted for ANY option
-        const hasVoted = Object.values(poll.votes).some(voters => voters.includes(decoded.userId));
+        const existingVotes = poll.votes && typeof poll.votes === "object" && !Array.isArray(poll.votes)
+            ? poll.votes
+            : {};
+        const hasVoted = Object.values(existingVotes).some(
+            voters => Array.isArray(voters) && voters.includes(decoded.userId)
+        );
         if (hasVoted) {
             return NextResponse.json({ error: "You already voted" }, { status: 400 });
         }
 
+        const selectedVoters = Array.isArray(existingVotes[optionIndex])
+            ? existingVotes[optionIndex]
+            : [];
         const updatedVotes = {
-            ...poll.votes,
-            [optionIndex]: [...(poll.votes[optionIndex] || []), decoded.userId]
+            ...existingVotes,
+            [optionIndex]: [...selectedVoters, decoded.userId]
         };
 
         const updatedPoll = await prisma.poll.update({

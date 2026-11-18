@@ -80,7 +80,7 @@ function DigestContent({ digest }: { digest: string }) {
     }
 
     rendered.push(
-      <p key={`paragraph-${index}`} className="mb-4 leading-7 text-zinc-700 dark:text-zinc-300">
+      <p key={`paragraph-${index}`} className="mb-4 leading-7 text-zinc-900 dark:text-zinc-100 drop-shadow-sm">
         {renderInlineText(line)}
       </p>
     );
@@ -120,53 +120,31 @@ export default function DailyDigestCard() {
   }, [fetchDigest]);
 
   return (
-    <div className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow duration-300 mb-8 relative overflow-hidden group">
-      {/* Premium subtle gradient background wash */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-80" />
-      
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-        <h2 className="text-2xl font-extrabold text-zinc-900 dark:text-white flex items-center gap-2 tracking-tight">
-          <svg
-            className="w-6 h-6 text-indigo-500 dark:text-indigo-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15"
-            />
-          </svg>
-          Daily Digest
-        </h2>
-        
+    <div className="mb-8 w-full overflow-hidden border border-white/70 bg-white/82 shadow-[0_12px_36px_rgba(24,24,27,0.16)] backdrop-blur-md dark:border-white/10 dark:bg-zinc-950/78">
+      <div className="flex flex-col gap-5 border-b border-zinc-900/10 px-6 py-5 sm:flex-row sm:items-end sm:justify-between sm:px-8 dark:border-white/10">
+        <div>
+          <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-700 dark:text-emerald-400">
+            Today&apos;s briefing
+          </p>
+          <h2 className="text-3xl font-black tracking-[-0.03em] text-zinc-950 dark:text-white">
+            Daily Digest
+          </h2>
+        </div>
+
         <div className="flex items-center gap-3">
           {date && (
-            <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <time className="text-xs font-bold uppercase tracking-[0.12em] text-zinc-500 dark:text-zinc-400">
               {new Date(date).toLocaleDateString(undefined, {
-                weekday: 'long',
-                month: 'short',
-                day: 'numeric'
+                weekday: "short",
+                month: "short",
+                day: "numeric",
               })}
-            </span>
+            </time>
           )}
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-bold border border-purple-200 dark:border-purple-800/50 shadow-sm">
-            <svg
-              className="w-3.5 h-3.5"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0z" />
-              <path d="M8 9.5a1.5 1.5 0 113 0v4.73A1.493 1.493 0 0110.151 15h-.302A1.493 1.493 0 018 14.23V9.5zM10 5a4.5 4.5 0 00-4.5 4.5v4.5A2.5 2.5 0 008 16.5h4a2.5 2.5 0 002.5-2.5v-4.5A4.5 4.5 0 0010 5z" />
-            </svg>
-            AI Generated
-          </span>
         </div>
       </div>
 
-      <div className="relative min-h-[120px]">
+      <div className="relative px-6 py-7 sm:px-8 sm:py-8">
         {/* Loading State */}
         {isLoading && (
           <div className="space-y-4 animate-pulse pt-2">
@@ -203,7 +181,7 @@ export default function DailyDigestCard() {
 
         {/* Success State */}
         {!isLoading && !error && digest && (
-          <div className="rounded-2xl border border-zinc-200/80 bg-zinc-50/70 px-5 py-5 dark:border-zinc-700/70 dark:bg-zinc-950/30 md:px-7 md:py-6">
+          <div className="border-l-2 border-zinc-300 pl-5 sm:pl-7 dark:border-zinc-700">
             <DigestContent digest={digest} />
           </div>
         )}

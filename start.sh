@@ -1,8 +1,19 @@
 #!/bin/bash
-# Moves into the app directory
+set -e
+
+# Move into the app directory
 cd "$(dirname "$0")/pp2"
 
-# Starts the Docker containers in the background and forces a rebuild
-echo "Building and starting SportsDeck..."
-docker-compose up -d --build
+echo "Building SportsDeck..."
+docker compose build web
+
+echo "Starting PostgreSQL..."
+docker compose up -d db
+
+echo "Deploying database migrations..."
+docker compose run --rm web npx prisma migrate deploy
+
+echo "Starting SportsDeck..."
+docker compose up -d
+
 echo "SportsDeck is now running!"

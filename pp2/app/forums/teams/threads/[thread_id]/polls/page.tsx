@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import ReportModal from "@/app/components/ReportModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Poll = {
     id: number;
@@ -28,13 +29,13 @@ export default function ThreadPollsPage() {
   const [userId, setUserId] = useState<number | null>(null);
 
   const [showPollForm, setShowPollForm] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [pollQuestion, setPollQuestion] = useState("");
   const [pollOptions, setPollOptions] = useState("");
   const [pollDeadline, setPollDeadline] = useState("");
   const [creatingPoll, setCreatingPoll] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
+  const { user: currentUser, isAuthenticated: isLoggedIn } = useAuth();
 
   function openReport(target: ReportTarget) {
     setReportTarget(target);
@@ -48,10 +49,8 @@ export default function ThreadPollsPage() {
         const res = await fetch('/api/auth/me');
         const data = await res.json();
         setUserId(data?.user?.id ?? data?.user?.userId ?? null);
-        setIsLoggedIn(!!data.user);
       } catch {
         setUserId(null);
-        setIsLoggedIn(false);
       }
     }
     fetchUserId();
@@ -205,6 +204,11 @@ export default function ThreadPollsPage() {
                 {pollExpired && (
                   <div className="text-red-500 text-xs mb-2">Voting closed</div>
                 )}
+                {!isLoggedIn && (
+                  <a href="/login" className="mb-3 inline-block text-xs font-bold text-zinc-500 hover:text-zinc-950 dark:hover:text-white">
+                    Sign in to vote
+                  </a>
+                )}
                 <div className="clear-both" />
                 <div className="space-y-2 mt-2">
                   {poll.options.map((option, idx) => (
@@ -212,6 +216,7 @@ export default function ThreadPollsPage() {
                       key={idx}
                       onClick={async () => {
                         if (pollExpired) return;
+                        if (!isLoggedIn) return;
                         if (userVotes[poll.id] !== undefined) return;
                         await fetch(`/api/forums/teams/threads/${thread_id}/polls/${poll.id}`, {
                           method: "PUT",
@@ -221,7 +226,7 @@ export default function ThreadPollsPage() {
                         setUserVotes((prev) => ({ ...prev, [poll.id]: idx }));
                       }}
                       className={`p-2 rounded transition cursor-pointer ${pollExpired ? "bg-gray-200 text-gray-400 cursor-not-allowed" : userVotes[poll.id] === idx ? "bg-blue-400 text-white" : "bg-gray-100 dark:bg-zinc-700 hover:bg-gray-200 dark:hover:bg-zinc-600"}`}
-                      style={pollExpired ? { pointerEvents: "none" } : {}}
+                      style={pollExpired || !isLoggedIn ? { pointerEvents: "none" } : {}}
                     >
                       {option}
                       {userVotes[poll.id] === idx && <span className="ml-2">(Voted)</span>}

@@ -143,12 +143,19 @@ export default function TeamThreadPage() {
             {post.textContent}
           </div>
           <div className="clear-both" />
-          <button
-            className="mt-2 px-2 py-1 text-xs bg-blue-200 dark:bg-blue-800 rounded transition-colors duration-200 hover:bg-blue-400 hover:dark:bg-blue-600 hover:text-white hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            onClick={() => setShowReplyForm((v) => !v)}
-          >
-            {showReplyForm ? "Cancel" : "Reply"}
-          </button>
+          {userId && (
+            <button
+              className="mt-2 px-2 py-1 text-xs bg-blue-200 dark:bg-blue-800 rounded transition-colors"
+              onClick={() => setShowReplyForm((v) => !v)}
+            >
+              {showReplyForm ? "Cancel" : "Reply"}
+            </button>
+          )}
+          {!userId && (
+            <a href="/login" className="mt-2 inline-block text-xs font-bold text-zinc-500 hover:text-zinc-950 dark:hover:text-white">
+              Sign in to reply
+            </a>
+          )}
           {showReplyForm && (
             <form onSubmit={handleReply} className="mt-2">
               <textarea
@@ -193,7 +200,7 @@ export default function TeamThreadPage() {
         >
           Flag
         </button>
-        <h1 className="text-2xl font-bold break-words">{thread.threadTitle}</h1>
+        <h1 className="text-2xl font-bold wrap-break-word">{thread.threadTitle}</h1>
         <div className="clear-both" />
       </div>
       <div className="flex gap-4 mb-6">

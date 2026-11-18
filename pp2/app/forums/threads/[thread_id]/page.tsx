@@ -137,15 +137,15 @@ export default function ThreadPage() {
     }
 
     return (
-      <div style={{ marginLeft: depth * 32 }} className={depth > 0 ? "mt-2" : ""}>
-        <div
+      <div className={depth > 0 ? "ml-3 border-l border-zinc-300 pl-3 sm:ml-6 sm:pl-5 dark:border-zinc-700" : ""}>
+        <article
           className={
             depth === 0
-              ? "relative mb-6 p-6 bg-white dark:bg-zinc-800 rounded-lg shadow border-2 border-indigo-500 hover:border-indigo-600 transition"
-              : "relative mb-4 p-4 bg-white dark:bg-zinc-800 rounded-lg shadow border border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 transition"
+              ? "relative mb-5 border border-zinc-300 bg-white p-5 sm:p-6 dark:border-zinc-700 dark:bg-zinc-900"
+              : "relative mb-3 bg-white px-2 py-3 dark:bg-zinc-900"
           }
         >
-          <div className="float-right ml-3 mb-2 flex flex-col sm:flex-row gap-2">
+          <div className="absolute right-4 top-4 flex items-center gap-1.5">
             {!isDeleted && isOwner && (
               <>
                 <button
@@ -153,7 +153,7 @@ export default function ThreadPage() {
                   title="Edit post"
                   onClick={() => setIsEditing(!isEditing)}
                   disabled={isDeleting}
-                  className="cursor-pointer rounded border border-blue-300 bg-white px-2 py-1 text-xs font-semibold text-blue-600 transition hover:bg-blue-50 dark:bg-zinc-900 disabled:opacity-50"
+                  className="cursor-pointer rounded px-2 py-1 text-xs font-bold text-zinc-500 transition hover:text-zinc-950 disabled:opacity-50 dark:hover:text-white"
                 >
                   {isEditing ? "Cancel Edit" : "Edit"}
                 </button>
@@ -162,7 +162,7 @@ export default function ThreadPage() {
                   title="Delete post"
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="cursor-pointer rounded border border-red-300 bg-white px-2 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-50 dark:bg-zinc-900 disabled:opacity-50"
+                  className="cursor-pointer rounded px-2 py-1 text-xs font-bold text-zinc-500 transition hover:text-red-600 disabled:opacity-50"
                 >
                   {isDeleting ? "..." : "Delete"}
                 </button>
@@ -188,8 +188,8 @@ export default function ThreadPage() {
             <div
               className={
                 depth === 0
-                  ? "text-lg font-semibold text-indigo-700 dark:text-indigo-200 mb-2 flex items-center gap-2"
-                  : "text-sm text-zinc-600 dark:text-zinc-300 mb-2 flex items-center gap-2"
+                  ? "mb-3 flex items-center gap-2 text-sm font-bold text-zinc-950 dark:text-zinc-100"
+                  : "mb-2 flex items-center gap-2 text-xs font-bold text-zinc-700 dark:text-zinc-300"
               }
             >
               by <span className="font-bold">{post.author?.username || "Unknown"}</span>
@@ -216,7 +216,7 @@ export default function ThreadPage() {
                 className={
                   depth === 0
                     ? `text-xl font-medium text-gray-900 dark:text-gray-100 mb-2 whitespace-pre-wrap ${isDeleted && 'italic text-red-500 opacity-70'}`
-                    : `text-gray-800 dark:text-gray-200 whitespace-pre-wrap ${isDeleted && 'italic text-red-500 opacity-70'}`
+                    : `whitespace-pre-wrap text-sm leading-6 text-zinc-800 dark:text-zinc-200 ${isDeleted && 'italic text-red-500 opacity-70'}`
                 }
               >
                 {post.textContent}
@@ -225,7 +225,7 @@ export default function ThreadPage() {
             </>
           )}
           <div className="clear-both" />
-          {!isDeleted && (
+          {!isDeleted && currentUser && (
             <button
               className="mt-4 px-3 py-1.5 text-xs font-bold bg-zinc-100 dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-600 text-zinc-600 dark:text-zinc-300 rounded-lg transition-colors hover:bg-zinc-200 dark:hover:bg-zinc-600 hover:text-zinc-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-zinc-400"
               onClick={() => setShowReplyForm((v) => !v)}
@@ -247,9 +247,14 @@ export default function ThreadPage() {
               </button>
             </form>
           )}
-        </div>
+          {!isDeleted && !currentUser && (
+            <a href="/login" className="mt-4 inline-block text-xs font-bold text-zinc-500 hover:text-zinc-950 dark:hover:text-white">
+              Sign in to reply
+            </a>
+          )}
+        </article>
         {post.replies && post.replies.length > 0 && (
-          <div>
+          <div className="mt-4">
             {post.replies.map((reply) => (
               <RenderPost key={reply.id} post={reply} depth={depth + 1} />
             ))}
@@ -260,52 +265,35 @@ export default function ThreadPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto py-10 px-4">
-      <button onClick={() => window.history.back()} className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Go Back</button>
-      <div className="mb-4">
-        <button
-          type="button"
-          title="Report thread"
-          onClick={() =>
-            openReport({
-              targetId: Number(thread_id),
-              targetType: "THREAD",
-              contentContext: `${thread.threadTitle}\n\n${thread.posts?.[0]?.textContent || ""}`,
-            })
-          }
-          className="float-right ml-3 mb-2 cursor-pointer rounded border border-red-300 bg-white px-3 py-1 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:bg-zinc-900"
-        >
-          Flag
-        </button>
-        <h1 className="text-2xl font-bold break-words">{thread.threadTitle}</h1>
-        <div className="clear-both" />
+    <main className="min-h-screen bg-[#f4f5f7] px-4 py-8 text-zinc-950 dark:bg-zinc-950 dark:text-zinc-100 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl">
+        <header className="mb-6 border-b border-zinc-300 pb-5 dark:border-zinc-800">
+          <div className="mb-3 flex items-center justify-between gap-4">
+            <a href="/forums" className="text-sm font-bold text-zinc-500 hover:text-zinc-950 dark:hover:text-white">← All discussions</a>
+            <button
+              type="button"
+              onClick={() => openReport({ targetId: Number(thread_id), targetType: "THREAD", contentContext: `${thread.threadTitle}\n\n${thread.posts?.[0]?.textContent || ""}` })}
+              className="text-xs font-bold uppercase tracking-wider text-zinc-500 hover:text-red-600"
+            >Report</button>
+          </div>
+          <h1 className="wrap-break-word text-3xl font-black tracking-[-0.03em] sm:text-4xl">{thread.threadTitle}</h1>
+          <div className="mt-5 flex items-center justify-between gap-4">
+            {typeof thread_id === "string" && <ThreadSentiment threadId={thread_id} />}
+            <a href={`/forums/threads/${thread_id}/polls`} className="shrink-0 border-b-2 border-zinc-950 pb-1 text-sm font-bold dark:border-white">View polls</a>
+          </div>
+        </header>
+
+        {thread.posts?.length > 0 && <RenderPost post={thread.posts[0]} depth={0} />}
+
+        <ReportModal
+          isOpen={isReportOpen}
+          onClose={() => setIsReportOpen(false)}
+          targetId={reportTarget?.targetId ?? null}
+          targetType={reportTarget?.targetType ?? null}
+          contentContext={reportTarget?.contentContext || ""}
+          reporterId={currentUser?.id ? Number(currentUser.id) : null}
+        />
       </div>
-      <div className="flex gap-4 mb-6">
-        <a
-          href={`/forums/threads/${thread_id}/polls`}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-        >
-          View Polls
-        </a>
-      </div>
-
-      {typeof thread_id === "string" && (
-        <ThreadSentiment threadId={thread_id} />
-      )}
-
-      {/* Render the main post (assume first post is main) */}
-      {thread.posts && thread.posts.length > 0 && (
-        <RenderPost post={thread.posts[0]} depth={0} />
-      )}
-
-      <ReportModal
-        isOpen={isReportOpen}
-        onClose={() => setIsReportOpen(false)}
-        targetId={reportTarget?.targetId ?? null}
-        targetType={reportTarget?.targetType ?? null}
-        contentContext={reportTarget?.contentContext || ""}
-        reporterId={currentUser?.id ? Number(currentUser.id) : null}
-      />
-    </div>
+    </main>
   );
 }

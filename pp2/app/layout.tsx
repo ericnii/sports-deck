@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "./components/Navbar";
 import BannedUserInterceptor from "./components/BannedUserInterceptor";
 import { AuthProvider } from "../contexts/AuthContext";
+import PlayerGifBackground from "./components/PlayerGifBackground";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,11 +28,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} relative isolate antialiased`}>
+        <PlayerGifBackground />
         <AuthProvider>
           <BannedUserInterceptor>
-            <Navbar />
-            {children}
+            <div className="relative z-10 min-h-screen">
+              <Navbar />
+              {children}
+            </div>
           </BannedUserInterceptor>
         </AuthProvider>
       </body>

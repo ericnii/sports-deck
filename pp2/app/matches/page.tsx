@@ -39,49 +39,47 @@ function formatDateTime(utcDate: string) {
 }
 
 function MatchCard({ match }: { match: Match }) {
-  const router = useRouter();
   const { date, time } = formatDateTime(match.utcDate);
+  const isFinished = match.status === "FINISHED";
+
   return (
-    <div
-      className="block rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-lg px-6 py-5 font-sans hover:bg-indigo-50 dark:hover:bg-zinc-700 transition cursor-pointer select-none"
-    >
-      <div className="grid grid-cols-3 items-center w-full gap-y-3 text-zinc-700 dark:text-zinc-200">
-        {/* Row 1: date | time | status */}
-        <p className="font-medium text-left">{date}</p>
-        <p className="text-center font-light text-zinc-500 dark:text-zinc-400">{time}</p>
-        <p className="text-right font-medium text-indigo-600 dark:text-indigo-300">{match.status}</p>
+    <article className="border border-zinc-300 bg-white px-5 py-5 dark:border-zinc-800 dark:bg-zinc-900 sm:px-6">
+      <div className="mb-5 flex items-center justify-between border-b border-zinc-200 pb-3 text-xs font-bold uppercase tracking-[0.12em] text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+        <time>{date}</time>
+        <span>{time}</span>
+        <span className={isFinished ? "text-zinc-700 dark:text-zinc-200" : "text-emerald-700 dark:text-emerald-400"}>
+          {isFinished ? "Full time" : match.status.replace("_", " ").toLowerCase()}
+        </span>
+      </div>
 
-        {/* Row 2: away team | score/vs | home team */}
-        <a
-          onClick={(e) => e.stopPropagation()}
-          className="flex flex-col items-center hover:opacity-75 transition-opacity"
-        >
-          <img className="h-20 w-20" draggable={false} src={match.awayTeam.crest} alt={match.awayTeam.name} />
-          <span className="text-center mt-2 text-zinc-700 dark:text-zinc-200 text-sm">
-            {match.awayTeam.shortName}
-          </span>
-        </a>
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+        <div className="flex min-w-0 items-center gap-3 sm:justify-end">
+          <div className="min-w-0 text-right">
+            <p className="truncate text-sm font-black text-zinc-900 dark:text-zinc-100 sm:text-base">{match.awayTeam.name}</p>
+            <p className="text-xs uppercase text-zinc-500">Away</p>
+          </div>
+          <img className="h-11 w-11 shrink-0 object-contain" src={match.awayTeam.crest} alt="" />
+        </div>
 
-        <div className="flex justify-center">
-          {match.status === "FINISHED" ? (
-            <p className="text-4xl font-bold text-zinc-800 dark:text-zinc-100">{match.awayScore} - {match.homeScore}</p>
+        <div className="min-w-19 border-x border-zinc-200 px-4 text-center dark:border-zinc-800">
+          {isFinished ? (
+            <p className="text-2xl font-black tracking-tight sm:text-3xl">
+              {match.awayScore} <span className="text-zinc-400">–</span> {match.homeScore}
+            </p>
           ) : (
-            <p className="text-4xl font-bold text-zinc-400 dark:text-zinc-500 w-28 text-center">vs</p>
+            <p className="text-sm font-bold uppercase text-zinc-400">vs</p>
           )}
         </div>
 
-        <a
-          onClick={(e) => e.stopPropagation()}
-          className="flex flex-col items-center hover:opacity-75 transition-opacity"
-        >
-          <img className="h-20 w-20" draggable={false} src={match.homeTeam.crest} alt={match.homeTeam.name} />
-          <span className="text-center mt-2 text-zinc-700 dark:text-zinc-200 text-sm">
-            {match.homeTeam.shortName}
-          </span>
-        </a>
-
+        <div className="flex min-w-0 items-center gap-3">
+          <img className="h-11 w-11 shrink-0 object-contain" src={match.homeTeam.crest} alt="" />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-black text-zinc-900 dark:text-zinc-100 sm:text-base">{match.homeTeam.name}</p>
+            <p className="text-xs uppercase text-zinc-500">Home</p>
+          </div>
+        </div>
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -162,73 +160,53 @@ export default function MatchesPage() {
   const visibleMatches = matches.filter((m) => m.matchDay === selectedMatchday);
 
   return (
-    <div className="py-10">
-      <div className="mb-6 text-center">
-        <h1 className="text-3xl font-extrabold mb-2 text-indigo-700 dark:text-indigo-300 drop-shadow-lg">Matches</h1>
-        <p className="text-zinc-700 dark:text-zinc-300 text-lg">Premier League - Recent &amp; Upcoming Fixtures</p>
-      </div>
+    <main className="min-h-screen text-zinc-950 dark:text-zinc-100">
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <header className="mb-8 border-b border-zinc-300 pb-5 dark:border-zinc-800">
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-emerald-700 dark:text-emerald-400">Premier League</p>
+          <h1 className="text-4xl font-black tracking-[-0.04em] sm:text-5xl">Fixtures</h1>
+        </header>
 
-      <div className="max-w-4xl mx-auto px-4">
-        {/* Matchday carousel */}
-        <div className="flex items-center gap-2 mt-4">
-          {/* Left arrow */}
+        <nav className="mb-6 flex items-center gap-2 border-b border-zinc-300 pb-3 dark:border-zinc-800">
           <button
             onClick={() => scrollCarousel("left")}
-            className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 transition-all duration-200 cursor-pointer hover:bg-indigo-100 dark:hover:bg-zinc-600 ${canScrollLeft ? "opacity-100" : "opacity-20 pointer-events-none"}`}
-            aria-label="Scroll left"
-          >
-            &#8249;
-          </button>
+            className="h-9 w-9 shrink-0 border border-zinc-300 text-lg text-zinc-600 disabled:opacity-30 dark:border-zinc-700 dark:text-zinc-300"
+            disabled={!canScrollLeft}
+            aria-label="Previous matchdays"
+          >‹</button>
 
-          {/* Scrollable pill row */}
-          <div
-            ref={carouselRef}
-            onScroll={updateArrows}
-            className="flex flex-1 gap-2 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          >
-            {Array.from({ length: TOTAL_MATCHDAYS }, (_, i) => i + 1).map((day) => {
-              const isActive = day === selectedMatchday;
-              return (
-                <button
-                  key={day}
-                  ref={isActive ? activeButtonRef : null}
-                  onClick={() => setSelectedMatchday(day)}
-                  className={`flex-shrink-0 px-4 py-1.5 rounded-full border text-sm whitespace-nowrap transition-all duration-200 cursor-pointer
-                    ${isActive
-                      ? "border-indigo-500 bg-indigo-600 text-white font-semibold"
-                      : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-indigo-50 dark:hover:bg-zinc-700 hover:text-indigo-700 dark:hover:text-indigo-200"
-                    }`}
-                >
-                  Matchday {day}
-                </button>
-              );
-            })}
+          <div ref={carouselRef} onScroll={updateArrows} className="flex flex-1 gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {Array.from({ length: TOTAL_MATCHDAYS }, (_, i) => i + 1).map((day) => (
+              <button
+                key={day}
+                ref={day === selectedMatchday ? activeButtonRef : null}
+                onClick={() => setSelectedMatchday(day)}
+                className={`min-w-20 shrink-0 border-b-2 px-3 py-2 text-sm font-bold transition ${day === selectedMatchday ? "border-zinc-950 text-zinc-950 dark:border-white dark:text-white" : "border-transparent text-zinc-500 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white"}`}
+              >
+                MD {day}
+              </button>
+            ))}
           </div>
 
-          {/* Right arrow */}
           <button
             onClick={() => scrollCarousel("right")}
-            className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 transition-all duration-200 cursor-pointer hover:bg-indigo-100 dark:hover:bg-zinc-600 ${canScrollRight ? "opacity-100" : "opacity-20 pointer-events-none"}`}
-            aria-label="Scroll right"
-          >
-            &#8250;
-          </button>
-        </div>
+            className="h-9 w-9 shrink-0 border border-zinc-300 text-lg text-zinc-600 disabled:opacity-30 dark:border-zinc-700 dark:text-zinc-300"
+            disabled={!canScrollRight}
+            aria-label="Next matchdays"
+          >›</button>
+        </nav>
 
-        {/* Match cards */}
-        <section className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-6 mt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {loading && <p className="text-center py-8 text-zinc-500 dark:text-zinc-400">Loading matches…</p>}
-            {error && <p className="text-center py-8 text-red-500">{error}</p>}
-            {!loading && !error && visibleMatches.length === 0 && (
-              <p className="text-center py-8 text-zinc-500 dark:text-zinc-400">No matches found for Matchday {selectedMatchday}.</p>
-            )}
-            {visibleMatches.map((match) => (
-              <MatchCard key={match.id} match={match} />
-            ))}
+        <section>
+          {loading && <p className="py-16 text-center text-zinc-500">Loading matches…</p>}
+          {error && <p className="py-16 text-center text-red-600">{error}</p>}
+          {!loading && !error && visibleMatches.length === 0 && (
+            <p className="border border-zinc-300 py-16 text-center text-zinc-500 dark:border-zinc-800">No matches found for Matchday {selectedMatchday}.</p>
+          )}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {visibleMatches.map((match) => <MatchCard key={match.id} match={match} />)}
           </div>
         </section>
       </div>
-    </div>
+    </main>
   );
 }

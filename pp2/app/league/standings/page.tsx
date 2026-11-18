@@ -46,87 +46,70 @@ export default function LeagueStandingsPage() {
   }, []);
 
   return (
-    <div className="py-10">
-      <div className="mb-6 text-center">
-        <h1 className="text-3xl font-extrabold mb-2 text-indigo-700 dark:text-indigo-300 drop-shadow-lg">League Standings</h1>
-        <p className="text-zinc-700 dark:text-zinc-300 text-lg">Premier League - Current Table</p>
-      </div>
+    <main className="min-h-screen text-zinc-950 dark:text-zinc-100">
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <header className="mb-8 border-b border-zinc-300 pb-5 dark:border-zinc-800">
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-emerald-700 dark:text-emerald-400">Premier League</p>
+          <h1 className="text-4xl font-black tracking-[-0.04em] sm:text-5xl">League Table</h1>
+        </header>
 
-      <div className="max-w-4xl mx-auto px-4">
-        <section className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-6 mt-4 overflow-hidden">
-          {loading && <p className="text-center py-8 text-zinc-500 dark:text-zinc-400">Loading standings…</p>}
-          {error && <p className="text-center py-8 text-red-500">{error}</p>}
+        <section className="overflow-hidden border border-zinc-300 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+          {loading && <p className="py-16 text-center text-zinc-500">Loading standings…</p>}
+          {error && <p className="py-16 text-center text-red-600">{error}</p>}
           {!loading && !error && standings.length === 0 && (
-            <p className="text-center py-8 text-zinc-500 dark:text-zinc-400">No standings found.</p>
+            <p className="py-16 text-center text-zinc-500">No standings found.</p>
           )}
 
           {!loading && !error && standings.length > 0 && (
             <>
-            <div className="mb-4 flex flex-wrap items-center justify-start gap-6 text-sm text-zinc-600 dark:text-zinc-400 px-2">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>
-                <span>Champions League</span>
+              <div className="flex flex-wrap gap-x-6 gap-y-2 border-b border-zinc-200 px-4 py-4 text-xs font-semibold text-zinc-500 dark:border-zinc-800 dark:text-zinc-400 sm:px-6">
+                <span className="flex items-center gap-2"><i className="h-2 w-2 bg-blue-600" />Champions League</span>
+                <span className="flex items-center gap-2"><i className="h-2 w-2 bg-orange-500" />Europa League</span>
+                <span className="flex items-center gap-2"><i className="h-2 w-2 bg-red-600" />Relegation</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-orange-500 inline-block"></span>
-                <span>Europa League</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-red-500 inline-block"></span>
-                <span>Relegation</span>
-              </div>
-            </div>
-            <div className="overflow-x-auto [scrollbar-width:thin]">
-              <table className="w-full text-left text-zinc-700 dark:text-zinc-200 whitespace-nowrap min-w-[600px]">
-                <thead>
-                  <tr className="border-b border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 font-medium">
-                    <th className="py-3 px-2 w-8 text-center">#</th>
-                    <th className="py-3 px-2">Team</th>
-                    <th className="py-3 px-2 text-center" title="Played">MP</th>
-                    <th className="py-3 px-2 text-center" title="Won">W</th>
-                    <th className="py-3 px-2 text-center" title="Drawn">D</th>
-                    <th className="py-3 px-2 text-center" title="Lost">L</th>
-                    <th className="py-3 px-2 text-center" title="Goals For">GF</th>
-                    <th className="py-3 px-2 text-center" title="Goals Against">GA</th>
-                    <th className="py-3 px-2 text-center" title="Goal Difference">GD</th>
-                    <th className="py-3 px-2 text-center font-bold text-indigo-600 dark:text-indigo-400" title="Points">Pts</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {standings.map((row) => (
-                    <tr
-                      key={row.id}
-                      className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-indigo-50 dark:hover:bg-zinc-800 transition cursor-pointer"
-                    >
-                      <td className="py-3 px-2 text-center font-semibold relative">
-                        {(row.position <= 4 || row.position === 5 || row.position >= standings.length - 2) && (
-                          <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-3/4 rounded-r-md ${row.position <= 4 ? "bg-blue-500" : row.position === 5 ? "bg-orange-500" : "bg-red-500"}`}></div>
-                        )}
-                        <span className={row.position <= 4 ? "text-blue-600 dark:text-blue-400" : row.position === 5 ? "text-orange-600 dark:text-orange-400" : row.position >= standings.length - 2 ? "text-red-600 dark:text-red-400" : ""}>{row.position}</span>
-                      </td>
-                      <td className="py-3 px-2">
-                        <div className="flex items-center gap-3">
-                          <img className="h-6 w-6 object-contain" src={row.team.crest} alt={row.team.name} draggable={false} />
-                          <span className="font-medium text-zinc-800 dark:text-zinc-100">{row.team.shortName || row.team.name}</span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-2 text-center">{row.playedGames}</td>
-                      <td className="py-3 px-2 text-center">{row.won}</td>
-                      <td className="py-3 px-2 text-center">{row.draw}</td>
-                      <td className="py-3 px-2 text-center">{row.lost}</td>
-                      <td className="py-3 px-2 text-center">{row.goalsFor}</td>
-                      <td className="py-3 px-2 text-center">{row.goalsAgainst}</td>
-                      <td className="py-3 px-2 text-center">{row.goalDifference}</td>
-                      <td className="py-3 px-2 text-center font-bold text-indigo-600 dark:text-indigo-400">{row.points}</td>
+
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-170 whitespace-nowrap text-left">
+                  <thead>
+                    <tr className="border-b border-zinc-200 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+                      <th className="w-14 px-4 py-3 text-center">Pos</th>
+                      <th className="px-3 py-3">Club</th>
+                      <th className="px-3 py-3 text-center">P</th>
+                      <th className="px-3 py-3 text-center">W</th>
+                      <th className="px-3 py-3 text-center">D</th>
+                      <th className="px-3 py-3 text-center">L</th>
+                      <th className="px-3 py-3 text-center">GD</th>
+                      <th className="px-4 py-3 text-right">Pts</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
+                  </thead>
+                  <tbody>
+                    {standings.map((row) => (
+                      <tr key={row.id} className="group border-b border-zinc-100 last:border-0 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-800/60">
+                        <td className="relative px-4 py-4 text-center font-bold">
+                          <span className={`absolute left-0 top-2 bottom-2 w-0.5 ${row.position <= 4 ? "bg-blue-600" : row.position === 5 ? "bg-orange-500" : row.position >= standings.length - 2 ? "bg-red-600" : "bg-transparent"}`} />
+                          {row.position}
+                        </td>
+                        <td className="px-3 py-4">
+                          <div className="flex items-center gap-3">
+                            <img className="h-7 w-7 object-contain" src={row.team.crest} alt={row.team.name} />
+                            <span className="font-bold text-zinc-900 dark:text-zinc-100">{row.team.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-3 py-4 text-center text-zinc-600 dark:text-zinc-300">{row.playedGames}</td>
+                        <td className="px-3 py-4 text-center text-zinc-600 dark:text-zinc-300">{row.won}</td>
+                        <td className="px-3 py-4 text-center text-zinc-600 dark:text-zinc-300">{row.draw}</td>
+                        <td className="px-3 py-4 text-center text-zinc-600 dark:text-zinc-300">{row.lost}</td>
+                        <td className="px-3 py-4 text-center font-semibold">{row.goalDifference > 0 ? `+${row.goalDifference}` : row.goalDifference}</td>
+                        <td className="px-4 py-4 text-right text-lg font-black">{row.points}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </section>
       </div>
-    </div>
+    </main>
   );
 }

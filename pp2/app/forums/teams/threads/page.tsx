@@ -168,7 +168,7 @@ export default function ForumsPage() {
                   <button
                     key={forum.id}
                     onClick={() => setSelectedForum(forum)}
-                    className="block w-full text-left rounded-lg border border-zinc-200 dark:border-zinc-700 bg-blue-50 dark:bg-zinc-800 p-5 shadow hover:bg-blue-100 dark:hover:bg-zinc-700 transition"
+                    className="mb-5 border-b-2 border-zinc-950 px-1 py-2 text-sm font-bold text-zinc-950 dark:border-white dark:text-white"
                   >
                     <div className="font-bold text-lg text-blue-700 dark:text-blue-200 mb-1 truncate flex items-center gap-2">
                       {forum.name}
@@ -217,7 +217,7 @@ export default function ForumsPage() {
                 </button>
                 {showThreadForm && (
                   <form
-                    className="mb-6 p-4 bg-zinc-100 dark:bg-zinc-800 rounded shadow"
+                    className="mb-6 border border-zinc-300 bg-zinc-50 p-5 dark:border-zinc-700 dark:bg-zinc-900 sm:p-6"
                     onSubmit={async (e) => {
                       e.preventDefault();
                       setCreatingThread(true);
@@ -250,28 +250,30 @@ export default function ForumsPage() {
                     }}
                   >
                     <input
-                      className="block w-full mb-2 p-2 rounded border"
-                      placeholder="Thread Title"
+                      className="mb-3 block w-full border border-zinc-300 bg-white px-4 py-3 text-lg font-bold outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-950"
+                      placeholder="Thread title"
                       value={newThreadTitle}
                       onChange={e => setNewThreadTitle(e.target.value)}
                       required
                     />
                     <textarea
-                      className="block w-full mb-2 p-2 rounded border"
-                      placeholder="Main Post Content"
+                      className="mb-3 block min-h-36 w-full resize-y border border-zinc-300 bg-white px-4 py-3 leading-7 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-950"
+                      placeholder="What do you want to discuss?"
                       value={newThreadContent}
                       onChange={e => setNewThreadContent(e.target.value)}
                       required
                     />
                     <input
-                      className="block w-full mb-2 p-2 rounded border"
-                      placeholder="Tags (comma separated, optional)"
+                      className="mb-4 block w-full border border-zinc-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-950"
+                      placeholder="Tags, separated by commas"
                       value={newThreadTags}
                       onChange={e => setNewThreadTags(e.target.value)}
                     />
-                    <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded" disabled={creatingThread}>
-                      {creatingThread ? "Creating..." : "Create Thread"}
-                    </button>
+                    <div className="flex justify-end">
+                      <button type="submit" className="border-b-2 border-zinc-950 px-1 py-2 text-sm font-bold text-zinc-950 disabled:opacity-50 dark:border-white dark:text-white" disabled={creatingThread}>
+                        {creatingThread ? "Publishing…" : "Publish thread"}
+                      </button>
+                    </div>
                   </form>
                 )}
               </>

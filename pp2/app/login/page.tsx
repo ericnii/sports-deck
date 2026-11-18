@@ -85,9 +85,9 @@ export default function LoginPage() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-zinc-50 dark:bg-zinc-950">
+    <main className="flex min-h-screen items-center justify-center bg-[#f4f5f7] px-4 py-12 text-zinc-950 dark:bg-zinc-950 dark:text-zinc-100">
       <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-8 border border-zinc-200 dark:border-zinc-700">
+        <div className="border border-zinc-300 bg-white p-8 dark:border-zinc-800 dark:bg-zinc-900">
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-extrabold text-indigo-700 dark:text-indigo-300 mb-2 drop-shadow-lg">Welcome Back</h1>
@@ -193,6 +193,6 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

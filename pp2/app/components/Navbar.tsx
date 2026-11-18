@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
-  { href: "/feed", label: "Personalized Feed", color: "bg-indigo-600 hover:bg-indigo-700" },
-  { href: "/forums", label: "Forums", color: "bg-blue-500 hover:bg-blue-600" },
-  { href: "/league/standings", label: "League Standings", color: "bg-green-600 hover:bg-green-700" },
-  { href: "/matches", label: "Matches", color: "bg-yellow-500 hover:bg-yellow-600" },
-  { href: "/moderation", label: "Moderation", color: "bg-red-600 hover:bg-red-700" },
+  { href: "/feed", label: "Feed" },
+  { href: "/forums", label: "Forums" },
+  { href: "/league/standings", label: "Standings" },
+  { href: "/matches", label: "Matches" },
+  { href: "/moderation", label: "Moderation" },
 ];
 
 function SearchBar({ isMobile }: { isMobile?: boolean }) {
@@ -137,13 +137,13 @@ export default function Navbar() {
 
       {/* Desktop Section links */}
       <nav className="hidden lg:flex flex-wrap gap-2 justify-center px-4 shrink-0">
-        {NAV_LINKS.map(({ href, label, color }) => {
+        {NAV_LINKS.map(({ href, label }) => {
           if (href === "/moderation" && user?.role !== "ADMIN") return null;
           return (
             <a
               key={href}
               href={href}
-              className={`px-4 py-2 rounded-lg text-white text-sm font-semibold shadow transition flex-shrink-0 ${color} ${pathname.startsWith(href) ? "ring-2 ring-offset-1 ring-white/60" : ""
+              className={`px-4 py-2 rounded-lg text-zinc-900 dark:text-zinc-100 text-sm font-semibold shadow transition flex-shrink-0 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 ${pathname.startsWith(href) ? "ring-2 ring-offset-1 ring-indigo-500/60" : ""
                 }`}
             >
               {label}
@@ -232,13 +232,13 @@ export default function Navbar() {
 
         <div className="flex-1 p-4 flex flex-col gap-3">
           <SearchBar isMobile={true} />
-          {NAV_LINKS.map(({ href, label, color }) => {
+          {NAV_LINKS.map(({ href, label }) => {
             if (href === "/moderation" && user?.role !== "ADMIN") return null;
             return (
               <a
                 key={href}
                 href={href}
-                className={`px-4 py-3 rounded-lg text-white text-sm font-semibold shadow transition ${color} ${pathname.startsWith(href) ? "ring-2 ring-offset-1 ring-white/60" : ""
+                className={`px-4 py-3 rounded-lg text-zinc-900 dark:text-zinc-100 text-sm font-semibold shadow transition ${pathname.startsWith(href) ? "ring-2 ring-offset-1 ring-indigo-500/60" : ""
                   }`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >

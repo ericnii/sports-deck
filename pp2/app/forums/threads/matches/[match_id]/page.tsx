@@ -28,28 +28,38 @@ export default function MatchThreadPage() {
     if (match_id) fetchThreads();
   }, [match_id]);
 
-  if (loading) return <div className="p-8 text-center">Loading...</div>;
-  if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
+  if (loading) return <main className="min-h-screen px-4 py-16 text-center"><div className="mx-auto h-8 w-8 animate-spin border-2 border-zinc-400 border-t-zinc-950 dark:border-t-white" /></main>;
+  if (error) return <main className="min-h-screen px-4 py-16 text-center text-red-600">{error}</main>;
 
   return (
-    <div className="max-w-2xl mx-auto py-10 px-4">
-      <h1 className="text-2xl font-bold mb-4">Match Threads</h1>
-      {threads.length === 0 ? (
-        <div className="text-zinc-500 text-center">No threads found for this match.</div>
-      ) : (
-        <div className="space-y-4">
-          {threads.map((thread: any) => (
-            <a
-              key={thread.id}
-              href={`/forums/threads/matches/${thread.externalMatchId}`}
-              className="block p-4 bg-white dark:bg-zinc-800 rounded shadow hover:bg-blue-50 dark:hover:bg-zinc-700 transition"
-            >
-              <div className="font-semibold">{thread.title}</div>
-              <div className="text-xs text-zinc-400">Created: {new Date(thread.createdAt).toLocaleString()}</div>
-            </a>
-          ))}
-        </div>
-      )}
-    </div>
+    <main className="min-h-screen text-zinc-950 dark:text-zinc-100">
+      <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+        <header className="mb-8 border-b border-zinc-300 pb-5 dark:border-zinc-800">
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-emerald-700 dark:text-emerald-400">Match discussion</p>
+          <h1 className="text-4xl font-black tracking-[-0.04em] sm:text-5xl">Match Threads</h1>
+        </header>
+
+        <a href="/forums/threads/matches" className="mb-5 inline-block text-sm font-bold text-zinc-500 hover:text-zinc-950 dark:hover:text-white">← All match threads</a>
+
+        {threads.length === 0 ? (
+          <section className="border border-zinc-300 py-16 text-center text-zinc-500 dark:border-zinc-800">No threads found for this match.</section>
+        ) : (
+          <section className="border border-zinc-300 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+            <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
+              {threads.map((thread: any) => (
+                <a key={thread.id} href={`/forums/threads/${thread.id}`} className="group flex items-start gap-4 px-5 py-5 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 sm:px-6">
+                  <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center border border-zinc-300 text-xs font-black text-zinc-500 dark:border-zinc-700">VS</div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-black leading-snug group-hover:text-emerald-700 dark:group-hover:text-emerald-400">{thread.title}</p>
+                    <p className="mt-1 text-sm text-zinc-500">{new Date(thread.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <span className="text-zinc-400 transition group-hover:translate-x-1">›</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+    </main>
   );
 }

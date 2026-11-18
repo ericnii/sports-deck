@@ -168,8 +168,8 @@ export default function PublicProfilePage() {
   const isSelf = currentUser?.username === profile.username;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 py-12 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <main className="min-h-screen bg-[#f4f5f7] px-4 py-10 text-zinc-950 dark:bg-zinc-950 dark:text-zinc-100 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl space-y-8">
         
         {/* Error Inline Toast */}
         {errorMsg && (
@@ -186,7 +186,7 @@ export default function PublicProfilePage() {
         )}
 
         {/* Profile Header Card */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl p-8 sm:px-12 shadow-lg relative">
+        <div className="border border-zinc-300 bg-white p-6 sm:px-10 dark:border-zinc-800 dark:bg-zinc-900">
           <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-8">
             {/* Avatar */}
             <div className="flex-shrink-0">
@@ -363,6 +363,6 @@ export default function PublicProfilePage() {
 
         </div>
       </div>
-    </div>
+    </main>
   );
 }

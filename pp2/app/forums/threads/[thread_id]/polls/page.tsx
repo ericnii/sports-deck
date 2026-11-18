@@ -10,6 +10,7 @@ type Poll = {
     question: string;
     options: string[];
     deadline: string;
+    votes?: Record<string, number[]>;
 }
 
 type ReportTarget = {
@@ -49,20 +50,24 @@ export default function ThreadPollsPage() {
       const res = await fetch(`/api/forums/threads/${thread_id}/polls`);
       const data = await res.json();
       if (res.ok) {
-        setPolls(Array.isArray(data) ? data : data.polls || []);
-        setThreadTitle(data.threadTitle);
-        if (userId && data.polls) {
+        const pollsData = Array.isArray(data) ? data : data.polls || [];
+        setPolls(pollsData);
+        setThreadTitle(Array.isArray(data) ? "" : data.threadTitle || "");
+
+        if (userId) {
           const votesObj: { [pollId: number]: number | null } = {};
-          data.polls.forEach((poll: any) => {
-            if (poll.votes && typeof poll.votes === "object") {
-              for (const [optionIdx, voters] of Object.entries(poll.votes)) {
-                if (Array.isArray(voters) && voters.includes(userId)) {
-                  votesObj[poll.id] = Number(optionIdx);
-                }
+          pollsData.forEach((poll: any) => {
+            if (!poll.votes || typeof poll.votes !== "object") return;
+
+            for (const [optionIdx, voters] of Object.entries(poll.votes)) {
+              if (Array.isArray(voters) && voters.includes(userId)) {
+                votesObj[poll.id] = Number(optionIdx);
               }
             }
           });
           setUserVotes(votesObj);
+        } else {
+          setUserVotes({});
         }
       } else {
         setError(data.error || "Failed to load polls.");
@@ -127,8 +132,10 @@ export default function ThreadPollsPage() {
       }
     }
 
+    const showResults = pollExpired || userVotes[poll.id] !== undefined;
+
     return (
-      <div className="relative p-6 bg-white dark:bg-zinc-800 rounded-lg shadow border border-zinc-200 dark:border-zinc-700 hover:border-blue-300 dark:hover:border-zinc-500 transition">
+      <article className="relative border border-zinc-300 bg-white p-5 sm:p-6 dark:border-zinc-700 dark:bg-zinc-900">
         <div className="float-right ml-3 mb-2 flex flex-col sm:flex-row gap-2">
           {!isDeleted && isOwner && (
             <>
@@ -162,7 +169,7 @@ export default function ThreadPollsPage() {
                 contentContext: `${poll.question}\nOptions: ${poll.options.join(" | ")}`,
               })
             }
-            className="cursor-pointer rounded border border-red-300 bg-white px-2 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-50 dark:bg-zinc-900"
+            className="cursor-pointer rounded px-2 py-1 text-xs font-bold text-zinc-500 transition hover:text-red-600"
           >
             Flag
           </button>
@@ -206,136 +213,173 @@ export default function ThreadPollsPage() {
             <div className="clear-both" />
             
             {!isDeleted && (
-              <div className="space-y-2 mt-4">
-                {poll.options.map((option, idx) => (
-                  <div
-                    key={idx}
-                    onClick={async () => {
-                      if (pollExpired) return;
-                      if (userVotes[poll.id] !== undefined) return;
-                      await fetch(`/api/forums/threads/${thread_id}/polls/${poll.id}`, {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ optionIndex: idx })
-                      });
-                      setUserVotes((prev) => ({ ...prev, [poll.id]: idx }));
-                    }}
-                    className={`p-3 rounded-lg transition-all cursor-pointer border ${pollExpired ? "bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-500 cursor-not-allowed" : userVotes[poll.id] === idx ? "bg-blue-50 border-blue-400 dark:bg-blue-900/30 dark:border-blue-600 text-blue-800 dark:text-blue-200 shadow font-semibold" : "bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 hover:border-blue-300 dark:hover:border-zinc-500 hover:shadow-md"}`}
-                    style={pollExpired ? { pointerEvents: "none" } : {}}
-                  >
-                    {option}
-                    {userVotes[poll.id] === idx && <span className="ml-2 float-right text-blue-600 dark:text-blue-400 font-bold">✓ Voted</span>}
-                  </div>
-                ))}
+              <div className="mt-4 space-y-2">
+                {poll.options.map((option, idx) => {
+                  const voteCount = Array.isArray(poll.votes?.[String(idx)])
+                    ? poll.votes[String(idx)].length
+                    : 0;
+
+                  return (
+                    <div
+                      key={idx}
+                      onClick={async () => {
+                        if (pollExpired) return;
+                        if (userVotes[poll.id] !== undefined) return;
+
+                        try {
+                          const response = await fetch(
+                            `/api/forums/threads/${thread_id}/polls/${poll.id}`,
+                            { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ optionIndex: idx }) },
+                          );
+                          if (!response.ok) {
+                            const data = await response.json().catch(() => ({}));
+                            throw new Error(data.error || "Failed to submit vote");
+                          }
+                          setUserVotes((prev) => ({ ...prev, [poll.id]: idx }));
+                          await fetchPolls(true);
+                        } catch (voteError) {
+                          setError(voteError instanceof Error ? voteError.message : "Failed to submit vote");
+                        }
+                      }}
+                      className={`flex items-center justify-between border px-4 py-3 text-sm font-semibold transition ${
+                        pollExpired || userVotes[poll.id] !== undefined
+                          ? "cursor-not-allowed border-zinc-200 bg-zinc-100 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300"
+                          : userVotes[poll.id] === idx
+                            ? "border-emerald-600 bg-emerald-50 text-emerald-900 dark:border-emerald-500 dark:bg-emerald-950/30 dark:text-emerald-300"
+                            : "cursor-pointer border-zinc-300 bg-white hover:border-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-500"
+                      }`}
+                      style={pollExpired || userVotes[poll.id] !== undefined || !isLoggedIn ? { pointerEvents: "none" } : {}}
+                    >
+                      <span>{option}</span>
+                      {showResults && (
+                        <span className="ml-3 shrink-0 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                          {voteCount} {voteCount === 1 ? "vote" : "votes"}
+                          {userVotes[poll.id] === idx ? " · ✓ Voted" : ""}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
+            )}
+            {!isLoggedIn && !isDeleted && (
+              <a href="/login" className="mt-4 inline-block text-xs font-bold text-zinc-500 hover:text-zinc-950 dark:hover:text-white">
+                Sign in to vote
+              </a>
             )}
           </>
         )}
-      </div>
+      </article>
     );
   }
 
-  if (loading) return <div className="p-8 text-center flex justify-center"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div></div>;
-  if (error) return <div className="p-8 text-center text-red-500 bg-red-50 dark:bg-red-900/10 rounded-xl max-w-md mx-auto mt-10 border border-red-200">{error}</div>;
+  if (loading) return <main className="min-h-screen bg-[#f4f5f7] px-4 py-16 text-center dark:bg-zinc-950"><div className="mx-auto h-8 w-8 animate-spin border-2 border-zinc-400 border-t-zinc-950 dark:border-t-white" /></main>;
+  if (error) return <main className="min-h-screen bg-[#f4f5f7] px-4 py-16 text-center text-red-600 dark:bg-zinc-950"><p>{error}</p></main>;
 
   return (
-    <div className="max-w-2xl mx-auto py-10 px-4">
-      <button onClick={() => window.history.back()} className="mb-4 px-4 py-2 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 transition">Go Back</button>
-      <h1 className="text-3xl font-extrabold mb-4 text-zinc-900 dark:text-zinc-100">Polls for <span className="text-blue-600 dark:text-blue-400">{threadTitle}</span></h1>
-      <a
-        href={`/forums/threads/${thread_id}`}
-        className="inline-block mb-8 px-5 py-2.5 bg-zinc-800 dark:bg-zinc-200 text-white dark:text-zinc-900 font-bold rounded-lg shadow hover:opacity-90 transition"
-      >
-        Return to Thread
-      </a>
-      {isLoggedIn && (
-        <>
-          <button
-            className="mb-6 px-5 py-2.5 ml-3 bg-green-600 text-white font-bold rounded-lg shadow hover:bg-green-700 transition"
-            onClick={() => setShowPollForm((v) => !v)}
-          >
-            {showPollForm ? "Cancel Poll" : "Create New Poll"}
-          </button>
-          {showPollForm && (
-            <form
-              className="mb-8 p-6 bg-zinc-50 dark:bg-zinc-800/80 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-700"
-              onSubmit={async (e) => {
-                e.preventDefault();
-                setCreatingPoll(true);
-                setError("");
-                try {
-                  const res = await fetch(`/api/forums/threads/${thread_id}/polls`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      question: pollQuestion,
-                      options: pollOptions.split("\n").map((o) => o.trim()).filter(Boolean),
-                      deadline: pollDeadline,
-                    }),
-                  });
-                  if (!res.ok) throw new Error("Failed to create poll");
-                  setShowPollForm(false);
-                  setPollQuestion("");
-                  setPollOptions("");
-                  setPollDeadline("");
-                  fetchPolls(true);
-                } catch {
-                  setError("Failed to create poll.");
-                } finally {
-                  setCreatingPoll(false);
-                }
-              }}
-            >
-              <h3 className="text-lg font-bold mb-4">Create a New Poll</h3>
-              <input
-                className="block w-full mb-3 p-3 rounded-lg border focus:ring-2 focus:ring-green-500 bg-white dark:bg-zinc-900"
-                placeholder="Poll Question"
-                value={pollQuestion}
-                onChange={e => setPollQuestion(e.target.value)}
-                required
-              />
-              <textarea
-                className="block w-full mb-3 p-3 rounded-lg border focus:ring-2 focus:ring-green-500 bg-white dark:bg-zinc-900"
-                placeholder="Poll Options (one per line)"
-                rows={4}
-                value={pollOptions}
-                onChange={e => setPollOptions(e.target.value)}
-                required
-              />
-              <input
-                className="block w-full mb-4 p-3 rounded-lg border focus:ring-2 focus:ring-green-500 bg-white dark:bg-zinc-900"
-                type="datetime-local"
-                placeholder="Poll Deadline"
-                value={pollDeadline}
-                onChange={e => setPollDeadline(e.target.value)}
-                required
-              />
-              <button type="submit" className="px-6 py-2 bg-green-600 text-white font-bold rounded-lg shadow hover:bg-green-700" disabled={creatingPoll}>
-                {creatingPoll ? "Creating..." : "Publish Poll"}
+    <main className="min-h-screen bg-[#f4f5f7] px-4 py-8 text-zinc-950 dark:bg-zinc-950 dark:text-zinc-100 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl">
+        <header className="mb-7 border-b border-zinc-300 pb-5 dark:border-zinc-800">
+          <a href={`/forums/threads/${thread_id}`} className="mb-4 inline-block text-sm font-bold text-zinc-500 hover:text-zinc-950 dark:hover:text-white">← Back to discussion</a>
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-emerald-700 dark:text-emerald-400">Fan poll</p>
+          <h1 className="wrap-break-word text-3xl font-black tracking-[-0.03em] sm:text-4xl">{threadTitle}</h1>
+
+          <div className="mt-5 flex items-center justify-between gap-4">
+            <p className="text-sm text-zinc-500">Vote and see what the community thinks.</p>
+            {isLoggedIn && (
+              <button
+                className="shrink-0 border-b-2 border-zinc-950 px-1 py-2 text-sm font-bold text-zinc-950 dark:border-white dark:text-white"
+                onClick={() => setShowPollForm((v) => !v)}
+              >
+                {showPollForm ? "Cancel" : "Create poll"}
               </button>
-            </form>
-          )}
-        </>
-      )}
+            )}
+          </div>
+        </header>
 
-      {polls.length === 0 ? (
-        <div className="text-zinc-500 text-center py-12 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700">No polls have been created for this thread yet.</div>
-      ) : (
-        <div className="space-y-6 flex flex-col">
-          {polls.map((poll) => (
-            <RenderPoll key={poll.id} poll={poll} />
-          ))}
-        </div>
-      )}
+        {showPollForm && (
+          <form
+            className="mb-8 border border-zinc-300 bg-zinc-50 p-5 dark:border-zinc-700 dark:bg-zinc-900 sm:p-6"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setCreatingPoll(true);
+              setError("");
+              try {
+                const res = await fetch(`/api/forums/threads/${thread_id}/polls`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    question: pollQuestion,
+                    options: pollOptions.split("\n").map((o) => o.trim()).filter(Boolean),
+                    deadline: pollDeadline,
+                  }),
+                });
+                if (!res.ok) throw new Error("Failed to create poll");
+                setShowPollForm(false);
+                setPollQuestion("");
+                setPollOptions("");
+                setPollDeadline("");
+                fetchPolls(true);
+              } catch {
+                setError("Failed to create poll.");
+              } finally {
+                setCreatingPoll(false);
+              }
+            }}
+          >
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-zinc-500">New poll</p>
+            <h3 className="mb-5 text-xl font-black tracking-tight">Ask the community</h3>
+            <input
+              className="mb-3 block w-full border border-zinc-300 bg-white px-4 py-3 text-lg font-bold outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-950"
+              placeholder="Poll question"
+              value={pollQuestion}
+              onChange={e => setPollQuestion(e.target.value)}
+              required
+            />
+            <textarea
+              className="mb-3 block min-h-28 w-full resize-y border border-zinc-300 bg-white px-4 py-3 leading-7 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-950"
+              placeholder="Add one option per line"
+              rows={4}
+              value={pollOptions}
+              onChange={e => setPollOptions(e.target.value)}
+              required
+            />
+            <input
+              className="mb-4 block w-full border border-zinc-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-950"
+              type="datetime-local"
+              value={pollDeadline}
+              onChange={e => setPollDeadline(e.target.value)}
+              required
+            />
+            <div className="flex justify-end">
+              <button type="submit" className="border-b-2 border-zinc-950 px-1 py-2 text-sm font-bold text-zinc-950 disabled:opacity-50 dark:border-white dark:text-white" disabled={creatingPoll}>
+                {creatingPoll ? "Publishing…" : "Publish poll"}
+              </button>
+            </div>
+          </form>
+        )}
 
-      <ReportModal
-        isOpen={isReportOpen}
-        onClose={() => setIsReportOpen(false)}
-        targetId={reportTarget?.targetId ?? null}
-        targetType={reportTarget?.targetType ?? null}
-        contentContext={reportTarget?.contentContext || ""}
-        reporterId={userId}
-      />
-    </div>
+        {polls.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-zinc-300 bg-zinc-50 py-12 text-center dark:border-zinc-700 dark:bg-zinc-800/50">
+            <p className="text-zinc-500">No polls have been created for this thread yet.</p>
+          </div>
+        ) : (
+          <div className="flex flex-col space-y-6">
+            {polls.map((poll) => (
+              <RenderPoll key={poll.id} poll={poll} />
+            ))}
+          </div>
+        )}
+
+        <ReportModal
+          isOpen={isReportOpen}
+          onClose={() => setIsReportOpen(false)}
+          targetId={reportTarget?.targetId ?? null}
+          targetType={reportTarget?.targetType ?? null}
+          contentContext={reportTarget?.contentContext || ""}
+          reporterId={userId}
+        />
+      </div>
+    </main>
   );
 }

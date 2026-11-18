@@ -208,7 +208,7 @@ export default function ModerationDashboard() {
   };
 
   const renderGroup = (g: Group) => (
-    <div key={g.targetId} className="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-sm p-5 hover:shadow-md transition">
+    <div key={g.targetId} className="border border-zinc-300 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex justify-between items-start mb-4">
         <div>
           <h3 className="font-semibold text-lg text-zinc-900 dark:text-zinc-100">{g.type} #{g.targetId}</h3>
@@ -283,140 +283,142 @@ export default function ModerationDashboard() {
   );
 
   return (
-    <div className="py-2 max-w-5xl mx-auto px-4">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-extrabold mb-2 text-indigo-700 dark:text-indigo-300 drop-shadow-md">Moderation Dashboard</h1>
-        <p className="text-zinc-600 dark:text-zinc-400 text-lg">Review Reports and Manage Appeals</p>
-      </div>
+    <main className="min-h-[calc(100vh-64px)] bg-[#f4f5f7] px-4 py-10 text-zinc-950 dark:bg-zinc-950 dark:text-zinc-100 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        <header className="mb-8 border-b border-zinc-300 pb-6 dark:border-zinc-800">
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-emerald-700 dark:text-emerald-400">Admin</p>
+          <h1 className="text-4xl font-black tracking-[-0.04em] sm:text-5xl">Moderation</h1>
+        </header>
 
-      <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-        {/* Tabs */}
-        <div className="flex border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
-          {(["THREADS", "POSTS", "POLLS", "APPEALS"] as const).map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-4 px-6 text-sm font-bold uppercase tracking-wider text-center transition-colors cursor-pointer ${activeTab === tab 
-                ? 'bg-white dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400' 
-                : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
-            >
-              {tab} 
-              <span className="ml-2 px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 text-xs text-zinc-600 dark:text-zinc-300">
-                {tab === "THREADS" ? groupedThreads.length : tab === "POSTS" ? groupedPosts.length : tab === "POLLS" ? groupedPolls.length : appeals.length}
-              </span>
-            </button>
-          ))}
-        </div>
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+          {/* Tabs */}
+          <div className="flex border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
+            {(["THREADS", "POSTS", "POLLS", "APPEALS"] as const).map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex-1 py-4 px-6 text-sm font-bold uppercase tracking-wider text-center transition-colors cursor-pointer ${activeTab === tab 
+                  ? 'bg-white dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400' 
+                  : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+              >
+                {tab} 
+                <span className="ml-2 px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 text-xs text-zinc-600 dark:text-zinc-300">
+                  {tab === "THREADS" ? groupedThreads.length : tab === "POSTS" ? groupedPosts.length : tab === "POLLS" ? groupedPolls.length : appeals.length}
+                </span>
+              </button>
+            ))}
+          </div>
 
-        {/* Content */}
-        <div className="p-6 bg-zinc-50/50 dark:bg-zinc-900/50 min-h-[400px]">
-          {loading && <div className="text-center py-10 text-zinc-500">Loading data...</div>}
-          {error && <div className="text-center py-10 text-red-500 font-medium">{error}</div>}
-          
-          {!loading && !error && activeTab === "THREADS" && (
-            <div className="space-y-4">
-              {groupedThreads.length === 0 ? (
-                <p className="text-center py-10 text-zinc-500">No pending thread reports.</p>
-              ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">{groupedThreads.map(renderGroup)}</div>
-              )}
-            </div>
-          )}
+          {/* Content */}
+          <div className="p-6 bg-zinc-50/50 dark:bg-zinc-900/50 min-h-100">
+            {loading && <div className="text-center py-10 text-zinc-500">Loading data...</div>}
+            {error && <div className="text-center py-10 text-red-500 font-medium">{error}</div>}
+            
+            {!loading && !error && activeTab === "THREADS" && (
+              <div className="space-y-4">
+                {groupedThreads.length === 0 ? (
+                  <p className="text-center py-10 text-zinc-500">No pending thread reports.</p>
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">{groupedThreads.map(renderGroup)}</div>
+                )}
+              </div>
+            )}
 
-          {!loading && !error && activeTab === "POSTS" && (
-            <div className="space-y-4">
-              {groupedPosts.length === 0 ? (
-                <p className="text-center py-10 text-zinc-500">No pending post reports.</p>
-              ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">{groupedPosts.map(renderGroup)}</div>
-              )}
-            </div>
-          )}
+            {!loading && !error && activeTab === "POSTS" && (
+              <div className="space-y-4">
+                {groupedPosts.length === 0 ? (
+                  <p className="text-center py-10 text-zinc-500">No pending post reports.</p>
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">{groupedPosts.map(renderGroup)}</div>
+                )}
+              </div>
+            )}
 
-          {!loading && !error && activeTab === "POLLS" && (
-            <div className="space-y-4">
-              {groupedPolls.length === 0 ? (
-                <p className="text-center py-10 text-zinc-500">No pending poll reports.</p>
-              ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">{groupedPolls.map(renderGroup)}</div>
-              )}
-            </div>
-          )}
+            {!loading && !error && activeTab === "POLLS" && (
+              <div className="space-y-4">
+                {groupedPolls.length === 0 ? (
+                  <p className="text-center py-10 text-zinc-500">No pending poll reports.</p>
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">{groupedPolls.map(renderGroup)}</div>
+                )}
+              </div>
+            )}
 
-          {!loading && !error && activeTab === "APPEALS" && (
-            <div className="space-y-4">
-              {appeals.length === 0 ? (
-                <p className="text-center py-10 text-zinc-500">No pending appeals.</p>
-              ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-                  {appeals.map(appeal => (
-                    <div key={appeal.id} className="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-sm p-5 hover:shadow-md transition">
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="flex items-center gap-3">
-                          {appeal.user?.avatar ? (
-                            <img src={appeal.user.avatar} className="w-10 h-10 rounded-full bg-zinc-200" alt="avatar" />
-                          ) : (
-                            <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold">
-                              {appeal.user?.username?.charAt(0).toUpperCase()}
+            {!loading && !error && activeTab === "APPEALS" && (
+              <div className="space-y-4">
+                {appeals.length === 0 ? (
+                  <p className="text-center py-10 text-zinc-500">No pending appeals.</p>
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+                    {appeals.map(appeal => (
+                      <div key={appeal.id} className="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-sm p-5 hover:shadow-md transition">
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="flex items-center gap-3">
+                            {appeal.user?.avatar ? (
+                              <img src={appeal.user.avatar} className="w-10 h-10 rounded-full bg-zinc-200" alt="avatar" />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold">
+                                {appeal.user?.username?.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <div>
+                              <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">{appeal.user?.username}</h3>
+                              <p className="text-zinc-500 text-xs">Appeal #{appeal.id}</p>
                             </div>
-                          )}
-                          <div>
-                            <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">{appeal.user?.username}</h3>
-                            <p className="text-zinc-500 text-xs">Appeal #{appeal.id}</p>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="bg-zinc-50 dark:bg-zinc-900 rounded p-3 text-sm space-y-2 mb-4 border border-zinc-100 dark:border-zinc-800">
-                        <p className="font-semibold text-zinc-700 dark:text-zinc-300">Message from user:</p>
-                        <p className="text-zinc-600 dark:text-zinc-400 italic">"{appeal.message}"</p>
-                      </div>
+                        <div className="bg-zinc-50 dark:bg-zinc-900 rounded p-3 text-sm space-y-2 mb-4 border border-zinc-100 dark:border-zinc-800">
+                          <p className="font-semibold text-zinc-700 dark:text-zinc-300">Message from user:</p>
+                          <p className="text-zinc-600 dark:text-zinc-400 italic">"{appeal.message}"</p>
+                        </div>
 
-                      {/* Context */}
-                      <div className="bg-red-50 dark:bg-red-900/10 rounded p-3 text-sm space-y-2 mb-4 border border-red-100 dark:border-red-900/30 max-h-32 overflow-y-auto">
-                        <p className="font-semibold text-red-800 dark:text-red-400 text-xs uppercase tracking-wide">Ban Context (Hidden Content)</p>
-                        {appeal.bannedThreads?.length === 0 && appeal.bannedPosts?.length === 0 ? (
-                          <p className="text-zinc-500 text-xs">No hidden recent posts/threads found.</p>
-                        ) : (
-                          <>
-                            {appeal.bannedThreads?.map((t: any) => (
-                              <div key={t.id} className="text-red-700 dark:text-red-300 text-xs">
-                                <strong>Thread #{t.id}:</strong> {t.title}
-                              </div>
-                            ))}
-                            {appeal.bannedPosts?.map((p: any) => (
-                              <div key={p.id} className="text-red-700 dark:text-red-300 text-xs">
-                                <strong>Post #{p.id}:</strong> {p.textContent}
-                              </div>
-                            ))}
-                          </>
-                        )}
-                      </div>
+                        {/* Context */}
+                        <div className="bg-red-50 dark:bg-red-900/10 rounded p-3 text-sm space-y-2 mb-4 border border-red-100 dark:border-red-900/30 max-h-32 overflow-y-auto">
+                          <p className="font-semibold text-red-800 dark:text-red-400 text-xs uppercase tracking-wide">Ban Context (Hidden Content)</p>
+                          {appeal.bannedThreads?.length === 0 && appeal.bannedPosts?.length === 0 ? (
+                            <p className="text-zinc-500 text-xs">No hidden recent posts/threads found.</p>
+                          ) : (
+                            <>
+                              {appeal.bannedThreads?.map((t: any) => (
+                                <div key={t.id} className="text-red-700 dark:text-red-300 text-xs">
+                                  <strong>Thread #{t.id}:</strong> {t.title}
+                                </div>
+                              ))}
+                              {appeal.bannedPosts?.map((p: any) => (
+                                <div key={p.id} className="text-red-700 dark:text-red-300 text-xs">
+                                  <strong>Post #{p.id}:</strong> {p.textContent}
+                                </div>
+                              ))}
+                            </>
+                          )}
+                        </div>
 
-                      <div className="flex justify-end gap-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
-                         <button 
-                          onClick={() => handleAppealAction(appeal.id, "REJECT")}
-                          disabled={processing === `appeal-${appeal.id}`}
-                          className="px-4 py-2 rounded-lg text-sm font-semibold bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-600 transition cursor-pointer disabled:opacity-50"
-                        >
-                          Reject
-                        </button>
-                        <button 
-                          onClick={() => handleAppealAction(appeal.id, "APPROVE")}
-                          disabled={processing === `appeal-${appeal.id}`}
-                          className="px-4 py-2 rounded-lg text-sm font-semibold bg-green-600 hover:bg-green-700 text-white transition shadow-sm cursor-pointer disabled:opacity-50"
-                        >
-                          Approve (Unban)
-                        </button>
+                        <div className="flex justify-end gap-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
+                           <button 
+                            onClick={() => handleAppealAction(appeal.id, "REJECT")}
+                            disabled={processing === `appeal-${appeal.id}`}
+                            className="px-4 py-2 rounded-lg text-sm font-semibold bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-600 transition cursor-pointer disabled:opacity-50"
+                          >
+                            Reject
+                          </button>
+                          <button 
+                            onClick={() => handleAppealAction(appeal.id, "APPROVE")}
+                            disabled={processing === `appeal-${appeal.id}`}
+                            className="px-4 py-2 rounded-lg text-sm font-semibold bg-green-600 hover:bg-green-700 text-white transition shadow-sm cursor-pointer disabled:opacity-50"
+                          >
+                            Approve (Unban)
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

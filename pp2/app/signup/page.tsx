@@ -133,30 +133,9 @@ export default function SignupPage() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-zinc-50 dark:bg-zinc-950">
-      {/* Toast Notifications */}
-      <div className="fixed top-4 right-4 z-50 space-y-2">
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            className={`p-4 rounded-lg shadow-lg flex items-center justify-between gap-3 min-w-80 ${toast.type === 'success'
-                ? 'bg-green-50 text-green-800 border border-green-200'
-                : 'bg-red-50 text-red-800 border border-red-200'
-              }`}
-          >
-            <span className="text-sm font-medium">{toast.message}</span>
-            <button
-              onClick={() => removeToast(toast.id)}
-              className="text-xl font-bold leading-none opacity-70 hover:opacity-100"
-            >
-              ×
-            </button>
-          </div>
-        ))}
-      </div>
-
+    <main className="flex min-h-screen items-center justify-center bg-[#f4f5f7] px-4 py-12 text-zinc-950 dark:bg-zinc-950 dark:text-zinc-100">
       <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-8 border border-zinc-200 dark:border-zinc-700">
+        <div className="border border-zinc-300 bg-white p-8 dark:border-zinc-800 dark:bg-zinc-900">
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-extrabold text-indigo-700 dark:text-indigo-300 mb-2 drop-shadow-lg">Create Account</h1>
@@ -293,6 +272,6 @@ export default function SignupPage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
