@@ -10,7 +10,7 @@ const sentimentCache = new Map();
 const CACHE_EXPIRATION = 60 * 60 * 1000;
 
 // Google Gemini API configuration
-const ai = new GoogleGenAI({});
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const GOOGLE_GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 /**

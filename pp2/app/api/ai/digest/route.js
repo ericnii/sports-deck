@@ -2,14 +2,11 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/prisma/db";
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({});
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 // In-memory cache for daily digest
 // Cache structure: { dateKey: digest_text }
 const digestCache = new Map();
-
-// Google Gemini API configuration
-const GOOGLE_GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 /**
  * Helper function to get today's date key for caching
@@ -25,10 +22,6 @@ function getTodaysCacheKey() {
  * Generates a readable, summarized digest
  */
 async function generateDigestWithGemini(prompt) {
-  if (!GOOGLE_GEMINI_API_KEY) {
-    throw new Error("GOOGLE_GEMINI_API_KEY environment variable is not set");
-  }
-
   try {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -112,7 +105,7 @@ export async function GET(request) {
           utcDate: {
             gte: oneDayAgo,
           },
-          status: { in: ["completed", "live"] },
+          status: { in: ["FINISHED", "IN_PLAY", "PAUSED", "LIVE"] },
         },
         include: {
           homeTeam: {
@@ -153,7 +146,13 @@ export async function GET(request) {
           posts: {
             select: {
               id: true,
+              textContent: true,
             },
+            orderBy: { createdAt: "asc" },
+            take: 1,
+          },
+          _count: {
+            select: { posts: true },
           },
         },
         orderBy: {
@@ -165,8 +164,10 @@ export async function GET(request) {
       threadsData = activeThreads
         .map((t) => ({
           title: t.title,
-          content: t.content.substring(0, 200), // Preview of first 200 chars
-          postCount: t.posts.length,
+          content:
+            t.posts[0]?.textContent?.substring(0, 200) ||
+            "No post preview available.",
+          postCount: t._count.posts,
           createdAt: t.createdAt,
         }))
         .sort((a, b) => b.postCount - a.postCount) // Sort by post count

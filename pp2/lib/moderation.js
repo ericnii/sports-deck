@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { prisma } from "@/prisma/db.js";
 
-const ai = new GoogleGenAI({});
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const HIGH_TOXICITY_THRESHOLD = 0.7;
 
 const moderationSchema = {

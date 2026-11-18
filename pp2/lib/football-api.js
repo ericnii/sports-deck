@@ -2,23 +2,35 @@ import { prisma } from "../prisma/db.js"
 
 const API_KEY = process.env.FOOTBALL_DATA_API_KEY;
 
+function getCurrentSeasonYear(now = new Date()) {
+  // Football seasons begin in August; November 2026 belongs to 2026/27.
+  return now.getUTCMonth() >= 7 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
+}
+
 export async function getMatches() {
   try {
     // Calculate dates: 2 weeks ago to 2 weeks from now
     const today = new Date();
+    const seasonYear = getCurrentSeasonYear(today);
     const twoWeeksAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
     const twoWeeksFromNow = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
 
     const dateFrom = twoWeeksAgo.toISOString().split('T')[0];
     const dateTo = twoWeeksFromNow.toISOString().split('T')[0];
 
-    const url = `https://api.football-data.org/v4/competitions/PL/matches?dateFrom=${dateFrom}&dateTo=${dateTo}`;
+    const url = `https://api.football-data.org/v4/competitions/PL/matches?season=${seasonYear}&dateFrom=${dateFrom}&dateTo=${dateTo}`;
 
     const res = await fetch(url, {
       headers: {
         "X-Auth-Token": API_KEY,
       },
     });
+
+    if (!res.ok) {
+      const errorBody = await res.json().catch(() => ({}));
+      throw new Error(errorBody.message || `Football data API returned HTTP ${res.status}`);
+    }
+
     const data = await res.json();
 
     // Caching the match into db
@@ -87,14 +99,26 @@ export async function getMatches() {
 
 export async function getAllMatches() {
   try {
-    // Fetch all matches for the PL season (no date filter)
-    const url = `https://api.football-data.org/v4/competitions/PL/matches`;
+    // Premier League seasons run from August to May/June.
+    const today = new Date();
+    const seasonYear = getCurrentSeasonYear(today);
+    const dateFrom = `${seasonYear}-08-01`;
+    const dateTo = `${seasonYear + 1}-07-31`;
+
+    // Fetch only the current season, avoiding old and future seasons.
+    const url = `https://api.football-data.org/v4/competitions/PL/matches?season=${seasonYear}&dateFrom=${dateFrom}&dateTo=${dateTo}`;
 
     const res = await fetch(url, {
       headers: {
         "X-Auth-Token": API_KEY,
       },
     });
+
+    if (!res.ok) {
+      const errorBody = await res.json().catch(() => ({}));
+      throw new Error(errorBody.message || `Football data API returned HTTP ${res.status}`);
+    }
+
     const data = await res.json();
 
     // Cache every match into db

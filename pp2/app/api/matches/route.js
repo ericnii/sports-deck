@@ -14,13 +14,21 @@ export async function GET(req) {
 
     const matchday = searchParams.get('matchday');
     const stage = searchParams.get('stage');
+    const now = new Date();
+    const seasonYear = now.getUTCMonth() >= 7 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
+    const seasonFrom = new Date(Date.UTC(seasonYear, 7, 1));
+    const seasonTo = new Date(Date.UTC(seasonYear + 1, 6, 31, 23, 59, 59));
 
     try {
         // Check for all matches (not restricted by date)
         const localMatches = await prisma.match.findMany({
             where: {
                 ...(matchday && { matchDay: parseInt(matchday) }),
-                ...(stage && { stage: stage })
+                ...(stage && { stage: stage }),
+                utcDate: {
+                    gte: seasonFrom,
+                    lte: seasonTo
+                }
             },
             orderBy: {
                 utcDate: 'asc'
@@ -47,7 +55,11 @@ export async function GET(req) {
             const matches = await prisma.match.findMany({
                 where: {
                     ...(matchday && { matchDay: parseInt(matchday) }),
-                    ...(stage && { stage: stage })
+                    ...(stage && { stage: stage }),
+                    utcDate: {
+                        gte: seasonFrom,
+                        lte: seasonTo
+                    }
                 },
                 orderBy: { utcDate: 'asc' },
                 include: {
