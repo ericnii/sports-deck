@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@google/genai": "^1.44.0",
+    "@neon/config": "^1.14.3",
+    "@neon/env": "^2.1.6",
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/client": "^6.19.2",
     "@prisma/studio": "^0.511.0",

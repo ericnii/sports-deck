@@ -44,5 +44,5 @@ next-env.d.ts
 
 # prisma
 /prisma/generated/
-/prisma/migrations/
 /prisma/dev.db
+.neon
